@@ -9,8 +9,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HabitHero.Core", "HabitHero
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HabitHero.Infrastructure", "HabitHero.Infrastructure\HabitHero.Infrastructure.csproj", "{D1CB8D71-3012-4A55-9222-E08FF1BF1DA6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HabitHero.Mobile", "HabitHero.Mobile\HabitHero.Mobile.csproj", "{2C14AD44-8EEB-4515-8E25-B6239833AC8E}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -57,24 +55,6 @@ Global
 		{D1CB8D71-3012-4A55-9222-E08FF1BF1DA6}.Release|x64.Build.0 = Release|Any CPU
 		{D1CB8D71-3012-4A55-9222-E08FF1BF1DA6}.Release|x86.ActiveCfg = Release|Any CPU
 		{D1CB8D71-3012-4A55-9222-E08FF1BF1DA6}.Release|x86.Build.0 = Release|Any CPU
-		{2C14AD44-8EEB-4515-8E25-B6239833AC8E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2C14AD44-8EEB-4515-8E25-B6239833AC8E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2C14AD44-8EEB-4515-8E25-B6239833AC8E}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
-		{2C14AD44-8EEB-4515-8E25-B6239833AC8E}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{2C14AD44-8EEB-4515-8E25-B6239833AC8E}.Debug|x64.Build.0 = Debug|Any CPU
-		{2C14AD44-8EEB-4515-8E25-B6239833AC8E}.Debug|x64.Deploy.0 = Debug|Any CPU
-		{2C14AD44-8EEB-4515-8E25-B6239833AC8E}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{2C14AD44-8EEB-4515-8E25-B6239833AC8E}.Debug|x86.Build.0 = Debug|Any CPU
-		{2C14AD44-8EEB-4515-8E25-B6239833AC8E}.Debug|x86.Deploy.0 = Debug|Any CPU
-		{2C14AD44-8EEB-4515-8E25-B6239833AC8E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2C14AD44-8EEB-4515-8E25-B6239833AC8E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{2C14AD44-8EEB-4515-8E25-B6239833AC8E}.Release|Any CPU.Deploy.0 = Release|Any CPU
-		{2C14AD44-8EEB-4515-8E25-B6239833AC8E}.Release|x64.ActiveCfg = Release|Any CPU
-		{2C14AD44-8EEB-4515-8E25-B6239833AC8E}.Release|x64.Build.0 = Release|Any CPU
-		{2C14AD44-8EEB-4515-8E25-B6239833AC8E}.Release|x64.Deploy.0 = Release|Any CPU
-		{2C14AD44-8EEB-4515-8E25-B6239833AC8E}.Release|x86.ActiveCfg = Release|Any CPU
-		{2C14AD44-8EEB-4515-8E25-B6239833AC8E}.Release|x86.Build.0 = Release|Any CPU
-		{2C14AD44-8EEB-4515-8E25-B6239833AC8E}.Release|x86.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
