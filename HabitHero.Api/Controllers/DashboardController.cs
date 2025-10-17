@@ -4,6 +4,7 @@ using HabitHero.Core.Models.Auth;
 using HabitHero.Infrastructure.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 
 namespace HabitHero.Api.Controllers
@@ -15,39 +16,34 @@ namespace HabitHero.Api.Controllers
         private readonly HabitHeroDbContext _db;
         public DashboardController(HabitHeroDbContext db) => _db = db;
 
-        [HttpPost("signup")]
-        public async Task<IActionResult> Signup([FromBody] SignupRequest request)
+        [HttpGet("signup/{username}/{email}/{password}/{confirmpassword}")]
+        public async Task<IActionResult> Signup([FromRoute] string username, [FromRoute] string email,[FromRoute] string password, [FromRoute] string confirmpassword)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            var exists = await _db.Tusers.AnyAsync(u => u.StrEmail == request.StrEmail);
+            var exists = await _db.Tusers.AnyAsync(u => u.StrEmail == email);
 
             if (exists)
             {
                 return Conflict(new { message = "Email already in use. Please try again." });
             };
 
-            if (request.StrConfirmPassword != request.StrPassword)
+            if (password != confirmpassword)
             { 
                 return Conflict(new { message = "Passwords do not match. Please try again." });
             };
 
             var user = new Tuser
             {
-                StrUsername = request.StrUsername,
-                StrEmail = request.StrEmail,
-                StrPassword = request.StrPassword,
+                StrUsername = username,
+                StrEmail = email,
+                StrPassword = password
             };
 
             _db.Tusers.Add(user);
             await _db.SaveChangesAsync();
 
-            return Ok(new AuthResponse
-            {
-                ObjUser = user,
-                StrAccessToken = string.Empty,
-                DtmExpiresAt = System.DateTime.UtcNow
-            });
+            return Ok($"New account for '{username}' successfully created.");
         }
 
         /// POST ACTION: LOGIN (AUTHENTICATE)
