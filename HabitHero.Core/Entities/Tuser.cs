@@ -15,8 +15,10 @@ namespace HabitHero.Core.Entities
         public string StrPassword { get; set; } = null!;
         public decimal DecPoints { get; set; }             
         public decimal MonCash { get; set; }               
-        public bool BlnAppRestriction { get; set; }        
+        public int? IntAppRestrictionId { get; set; }        
         public int? IntAvatarId { get; set; }
+        public virtual Tavatar IntAvatar { get; set; }
+        public virtual TappRestriction IntAppRestriction { get; set; }
 
         // Nav Props
         public Tavatar? Tavatar { get; set; }

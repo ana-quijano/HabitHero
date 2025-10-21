@@ -16,11 +16,12 @@ namespace HabitHero.Core.Entities
         public DateTime? DtmStartDate { get; set; }
         public DateTime? DtmEndDate { get; set; }
         public TimeSpan? DtmReminderTime { get; set; }
+        public virtual Tuser IntUser { get; set; } = null!;
+        public virtual Tschedule IntSchedule { get; set; } = null!;
 
         // Nav Props
         public Tuser? Tuser { get; set; }
         public Tschedule? Tschedule { get; set; }
         public ICollection<ThabitOccurrence> ThabitOccurrences { get; set; } = new List<ThabitOccurrence>();
     }
-}
 }

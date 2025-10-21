@@ -12,6 +12,8 @@ namespace HabitHero.Core.Entities
         public string StrItem { get; set; } = null!;
         public int IntItemTypeId { get; set; }
         public int IntItemTierId { get; set; }
+        public virtual TitemTier IntItemTier { get; set; } = null!;
+        public virtual TitemType IntItemType { get; set; } = null!;
 
         // Nav Props
         public TitemType? TitemType { get; set; }

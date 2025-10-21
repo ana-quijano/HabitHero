@@ -16,6 +16,8 @@ namespace HabitHero.Core.Entities
         public DateTime? DtmStartDate { get; set; }
         public DateTime? DtmEndDate { get; set; }
         public string? StrDescription { get; set; }
+        public virtual Tquest IntQuest { get; set; } = null!;
+        public virtual Tschedule IntSchedule { get; set; } = null!;
 
         // Nav Props
         public Tquest? Tquest { get; set; }

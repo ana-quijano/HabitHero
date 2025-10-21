@@ -99,7 +99,7 @@ namespace HabitHero.Api.Controllers
                 user.IntAvatarId,
                 user.DecPoints,
                 user.MonCash,
-                user.BlnAppRestriction
+                user.IntAppRestrictionId
             });
         }
     }
