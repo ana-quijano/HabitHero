@@ -19,8 +19,10 @@ namespace HabitHero.Core.Entities
         public int? IntAvatarId { get; set; }
 
         // Nav Props
-        public Tavatar? IntAvatar { get; set; }
+        public Tavatar? Tavatar { get; set; }
+        public TappRestriction? TappRestriction { get; set; }
         public ICollection<Thabit> Thabits { get; set; } = new List<Thabit>();
         public ICollection<TuserQuest> TuserQuests { get; set; } = new List<TuserQuest>();
+        public ICollection<TuserAchievement> TuserAchievements { get; set; } = new List<TuserAchievement>();
     }
 }
