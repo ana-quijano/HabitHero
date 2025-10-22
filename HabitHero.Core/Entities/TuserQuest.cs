@@ -12,8 +12,7 @@ namespace HabitHero.Core.Entities
         public int IntUserId { get; set; }
         public int IntQuestId { get; set; }
 
-        // Nav Props
-        public Tuser IntUser { get; set; } = null!;
-        public Tquest IntQuest { get; set; } = null!;
+        public Tuser? Tuser { get; set; }
+        public Tquest? Tquest { get; set; }
     }
 }

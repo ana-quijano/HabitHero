@@ -54,14 +54,20 @@ namespace HabitHero.Infrastructure.Data
                       .HasColumnName("intAvatarID");
                 entity.Property(e => e.IntAppRestrictionId)
                       .HasColumnName("intAppRestrictionID");
-                entity.HasOne(e => e.IntAvatar)
-                      .WithMany(a => a.Tusers)
-                      .HasForeignKey(e => e.IntAvatarId)
-                      .HasConstraintName("TUsers_TAvatars_FK");
-                entity.HasOne(e => e.IntAppRestriction)
-                      .WithMany(r => r.Tusers)
+
+                entity.HasOne(e => e.TappRestriction)
+                      .WithMany()
                       .HasForeignKey(e => e.IntAppRestrictionId)
-                      .HasConstraintName("TUsers_TAppRestrictions_FK");
+                      .HasConstraintName("TUsers_TAppRestrictions_FK")
+                      .IsRequired(false)
+                      .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.Tavatar)
+                      .WithMany()
+                      .HasForeignKey(e => e.IntAvatarId)
+                      .HasConstraintName("TUsers_TAvatars_FK")
+                      .IsRequired(false)
+                      .OnDelete(DeleteBehavior.Restrict);
             });
 
 
@@ -77,6 +83,13 @@ namespace HabitHero.Infrastructure.Data
                       .IsRequired()
                       .HasColumnType("varchar(255)")
                       .HasMaxLength(255);
+
+                entity.HasMany(a => a.Tusers)                  
+                     .WithOne(u => u.Tavatar)
+                     .HasForeignKey(u => u.IntAvatarId)
+                     .HasConstraintName("TUsers_TAvatars_FK")
+                     .IsRequired(false)
+                     .OnDelete(DeleteBehavior.Restrict);
             });
 
             modelBuilder.Entity<Tschedule>(entity =>
@@ -120,14 +133,6 @@ namespace HabitHero.Infrastructure.Data
                 entity.Property(e => e.DtmReminderTime)
                       .HasColumnName("dtmReminderTime")
                       .HasColumnType("time");
-                entity.HasOne(e => e.IntUser)
-                      .WithMany(u => u.Thabits)
-                      .HasForeignKey(e => e.IntUserId)
-                      .HasConstraintName("THabits_TUsers_FK");
-                entity.HasOne(e => e.IntSchedule)
-                      .WithMany(s => s.Thabits)
-                      .HasForeignKey(e => e.IntScheduleId)
-                      .HasConstraintName("THabits_TSchedules_FK");
             });
 
             modelBuilder.Entity<Tquest>(entity =>
@@ -165,14 +170,6 @@ namespace HabitHero.Infrastructure.Data
                       .UseIdentityColumn();
                 entity.Property(e => e.IntUserId).HasColumnName("intUserID");
                 entity.Property(e => e.IntQuestId).HasColumnName("intQuestID");
-                entity.HasOne(e => e.IntUser)
-                      .WithMany(u => u.TuserQuests)
-                      .HasForeignKey(e => e.IntUserId)
-                      .HasConstraintName("TUserQuests_TUsers_FK");
-                entity.HasOne(e => e.IntQuest)
-                      .WithMany(q => q.TuserQuests)
-                      .HasForeignKey(e => e.IntQuestId)
-                      .HasConstraintName("TUserQuests_TQuests_FK");
             });
 
             modelBuilder.Entity<Tstatus>(entity =>
@@ -187,10 +184,6 @@ namespace HabitHero.Infrastructure.Data
                       .IsRequired()
                       .HasColumnType("varchar(30)")
                       .HasMaxLength(30);
-                entity.HasMany(e => e.ThabitOccurrences)
-                      .WithOne(o => o.IntStatus)
-                      .HasForeignKey(o => o.IntStatusId)
-                      .HasConstraintName("THabitOccurrences_TStatuses_FK");
             });
 
             modelBuilder.Entity<ThabitOccurrence>(entity =>
@@ -209,14 +202,6 @@ namespace HabitHero.Infrastructure.Data
                 entity.Property(e => e.DtmCompleted)
                       .HasColumnName("dtmCompleted")
                       .HasColumnType("datetime");
-                entity.HasOne(e => e.IntHabit)
-                      .WithMany(h => h.ThabitOccurrences)
-                      .HasForeignKey(e => e.IntHabitId)
-                      .HasConstraintName("THabitOccurrences_THabits_FK");
-                entity.HasOne(e => e.IntQuestHabit)
-                      .WithMany(qh => qh.ThabitOccurrences)
-                      .HasForeignKey(e => e.IntQuestHabitId)
-                      .HasConstraintName("THabitOccurrences_TQuestHabits_FK");
             });
 
             modelBuilder.Entity<TquestHabit>(entity =>
@@ -248,14 +233,6 @@ namespace HabitHero.Infrastructure.Data
                       .HasColumnName("strDescription")
                       .HasColumnType("varchar(500)")
                       .HasMaxLength(500);
-                entity.HasOne(e => e.IntQuest)
-                      .WithMany(q => q.TquestHabits)
-                      .HasForeignKey(e => e.IntQuestId)
-                      .HasConstraintName("TQuestHabits_TQuests_FK");
-                entity.HasOne(e => e.IntSchedule)
-                      .WithMany(s => s.TquestHabits)
-                      .HasForeignKey(e => e.IntScheduleId)
-                      .HasConstraintName("TQuestHabits_TSchedules_FK");
             });
 
             modelBuilder.Entity<Tachievement>(entity =>
@@ -270,10 +247,6 @@ namespace HabitHero.Infrastructure.Data
                       .IsRequired()
                       .HasColumnType("varchar(150)")
                       .HasMaxLength(150);
-                entity.HasMany(e => e.TuserAchievements)
-                      .WithOne(ua => ua.IntAchievement)
-                      .HasForeignKey(ua => ua.IntAchievementId)
-                      .HasConstraintName("TUserAchievements_TAchievements_FK");
             });
 
             modelBuilder.Entity<TuserAchievement>(entity =>
@@ -287,14 +260,6 @@ namespace HabitHero.Infrastructure.Data
                       .HasColumnName("intUserID");
                 entity.Property(e => e.IntAchievementId)
                       .HasColumnName("intAchievementID");
-                entity.HasOne(e => e.IntUser)
-                      .WithMany(u => u.TuserAchievements)
-                      .HasForeignKey(e => e.IntUserId)
-                      .HasConstraintName("TUserAchievements_TUsers_FK");
-                entity.HasOne(e => e.IntAchievement)
-                      .WithMany(a => a.TuserAchievements)
-                      .HasForeignKey(e => e.IntAchievementId)
-                      .HasConstraintName("TUserAchievements_TAchievements_FK");
             });
 
             modelBuilder.Entity<TitemType>(entity =>
@@ -309,10 +274,6 @@ namespace HabitHero.Infrastructure.Data
                       .IsRequired()
                       .HasColumnType("varchar(50)")
                       .HasMaxLength(50);
-                entity.HasMany(e => e.Titems)
-                      .WithOne(i => i.IntItemType)
-                      .HasForeignKey(i => i.IntItemTypeId)
-                      .HasConstraintName("TItems_TItemTypes_FK");
             });
 
             modelBuilder.Entity<TappRestriction>(entity =>
@@ -331,10 +292,13 @@ namespace HabitHero.Infrastructure.Data
                       .HasColumnName("blnRestricted")
                       .HasColumnType("bit")
                       .HasDefaultValue(true);
-                entity.HasMany(e => e.Tusers)
-                      .WithOne(u => u.IntAppRestriction)
-                      .HasForeignKey(u => u.IntAppRestrictionId)
-                      .HasConstraintName("TUsers_TAppRestrictions_FK");
+
+                entity.HasMany(ar => ar.Tusers)               
+                     .WithOne(u => u.TappRestriction)
+                     .HasForeignKey(u => u.IntAppRestrictionId)
+                     .HasConstraintName("TUsers_TAppRestrictions_FK")
+                     .IsRequired(false)
+                     .OnDelete(DeleteBehavior.Restrict);
             });
 
             modelBuilder.Entity<TitemTier>(entity =>
@@ -349,10 +313,6 @@ namespace HabitHero.Infrastructure.Data
                       .IsRequired()
                       .HasColumnType("varchar(50)")
                       .HasMaxLength(50);
-                entity.HasMany(e => e.Titems)
-                      .WithOne(i => i.IntItemTier)
-                      .HasForeignKey(i => i.IntItemTierId)
-                      .HasConstraintName("TItems_TItemTiers_FK");
             });
 
             modelBuilder.Entity<Titem>(entity =>
@@ -371,14 +331,6 @@ namespace HabitHero.Infrastructure.Data
                       .HasColumnName("intItemTypeID");
                 entity.Property(e => e.IntItemTierId)
                       .HasColumnName("intItemTierID");
-                entity.HasOne(e => e.IntItemType)
-                      .WithMany(t => t.Titems)
-                      .HasForeignKey(e => e.IntItemTypeId)
-                      .HasConstraintName("TItems_TItemTypes_FK");
-                entity.HasOne(e => e.IntItemTier)
-                      .WithMany(t => t.Titems)
-                      .HasForeignKey(e => e.IntItemTierId)
-                      .HasConstraintName("TItems_TItemTiers_FK");
             });
 
         }

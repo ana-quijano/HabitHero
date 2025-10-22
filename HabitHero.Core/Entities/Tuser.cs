@@ -17,8 +17,6 @@ namespace HabitHero.Core.Entities
         public decimal MonCash { get; set; }               
         public int? IntAppRestrictionId { get; set; }        
         public int? IntAvatarId { get; set; }
-        public virtual Tavatar IntAvatar { get; set; }
-        public virtual TappRestriction IntAppRestriction { get; set; }
 
         // Nav Props
         public Tavatar? Tavatar { get; set; }

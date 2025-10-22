@@ -1,5 +1,6 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using HabitHero.Infrastructure.Data;
+using Microsoft.Data.SqlClient; 
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -24,6 +25,9 @@ var local = "DefaultConnection";
 //var local = "dbServerConnection";
 var conn = builder.Configuration.GetConnectionString(local); // Set in secrets.json
 builder.Services.AddDbContext<HabitHeroDbContext>(o => o.UseSqlServer(conn));
+
+var csb = new SqlConnectionStringBuilder(conn);
+Console.WriteLine($"[DB CHECK] Using '{local}' → Server={csb.DataSource}; Database={csb.InitialCatalog}");
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
