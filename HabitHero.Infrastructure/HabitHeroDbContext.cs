@@ -16,6 +16,7 @@ namespace HabitHero.Infrastructure.Data
         public DbSet<Thabit> Thabits { get; set; }
         public DbSet<Tquest> Tquests { get; set; }
         public DbSet<TuserQuest> TuserQuests { get; set; }
+        public DbSet<ThabitGroup> ThabitGroups { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
