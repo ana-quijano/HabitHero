@@ -14,76 +14,78 @@ namespace HabitHero.Api.Controllers
         private readonly HabitHeroDbContext _db;
         public GroupsController(HabitHeroDbContext db) => _db = db;
 
-        // Get: api/groups
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<ThabitGroup>>> GetGroups()
-        {
-            return await _db.ThabitGroups.ToListAsync();
-        }
+
+        //// Get: api/groups
+        //[HttpGet("GetAllGroups/{id}")]
+        //public async Task<ActionResult<IEnumerable<ThabitGroup>>> GetGroups()
+        //{
+        //    return await _db.ThabitGroups.ToListAsync();
+        //}
 
 
+        ////Get: Group ID
+        //[HttpGet("GetSingleGroup/{id:int}")]
+        //public async Task<ActionResult<ThabitGroup>> GetGroup(int id)
+        //{
+        //    var group = await _db.ThabitGroups.FindAsync(id);
+        //    if (group == null)
+        //    {
+        //        return NotFound(new { message = "Group not found." });
+        //    }
 
+        //    return Ok(group);
+        //}
 
-        //Get: Group ID
-        [HttpGet("{id:int}")]
-        public async Task<ActionResult<ThabitGroup>> GetGroup(int id)
-        {
-            var group = await _db.ThabitGroups.FindAsync(id);
-            if (group == null)
-            {
-                return NotFound(new { message = "Group not found." });
-            }
-
-            return Ok(group);
-        }
 
         //Post: Create Group
-        [HttpPut]
-        public async Task<ActionResult> CreateGroup([FromBody] ThabitGroup group)
+        [HttpPut("CreateGroup/{groupname}/{groupdescription}")]
+        public async Task<IActionResult> CreateGroup([FromRoute] string groupname, [FromRoute] string groupdescription)
         {
             if (!ModelState.IsValid)
             { 
                 return BadRequest(ModelState);
             }
 
-            _db.ThabitGroups.Add(group);
+            var userGroup = new ThabitGroup
+            {
+                StrGroupName = groupname,
+                StrDescription = groupdescription,
+            };
+
+            _db.ThabitGroups.Add(userGroup);
             await _db.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetGroup), new { id = group.IntGroupID }, group);
+            return Ok($"New Habit-Group for '{groupname}' successfully created.");
         }
+
 
         //Put: Update Group 
-        [HttpPut("{id:int}")]
-        public async Task<ActionResult> UpdateGroup(int id, [FromBody] ThabitGroup group)
+        [HttpPut("UpdateGroup/{groupname}/{newgroupname}/{newgroupdescription}")]
+        public async Task<ActionResult> UpdateGroup([FromRoute] string groupname, [FromRoute] string newgroupname, [FromRoute] string newgroupdescription)
         {
-            if (id != group.IntGroupID)
-            {
-                return BadRequest("Group ID not found.");
+            if (!ModelState.IsValid)
+            { 
+                return BadRequest(ModelState);
             }
 
-            _db.Entry(group).State = EntityState.Modified;
+            var existingGroup = await _db.ThabitGroups.FirstOrDefaultAsync(g => g.StrGroupName == groupname);
 
-            try
+            if (existingGroup == null)
             {
-                await _db.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!GroupExists(id))
-                {
-                    return NotFound(new { message = "Group not found." });
-                }
-                else
-                {
-                    throw;
-                }
+                return NotFound(new { message = "Group not found." });
             }
 
-            return NoContent();
+            existingGroup.StrGroupName = newgroupname;
+            existingGroup.StrDescription = newgroupdescription;
+
+            await _db.SaveChangesAsync();
+            
+            return Ok($"'Group '{newgroupname}' successfully Updated.");
         }
 
+
         //Delete: Delete Group
-        [HttpDelete("{id:int}")]
+        [HttpDelete("DeleteGroup/{id:int}")]
         public async Task<IActionResult> DeleteGroup(int id)
         {
             var group = await _db.ThabitGroups.FindAsync(id);
@@ -96,8 +98,9 @@ namespace HabitHero.Api.Controllers
             _db.ThabitGroups.Remove(group);
             await _db.SaveChangesAsync();
 
-            return NoContent();
+            return Ok($"Group successfully Deleted.");
         }
+
 
         private bool GroupExists(int id)
         {
