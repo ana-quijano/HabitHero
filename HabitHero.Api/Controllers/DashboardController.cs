@@ -53,7 +53,7 @@ namespace HabitHero.Api.Controllers
 
             var userId = user.IntUserId;
 
-            return Ok($"New account for '{username}' with User ID 'userId' successfully created.");
+            return Ok(userId);
         }
 
         /// <summary>
