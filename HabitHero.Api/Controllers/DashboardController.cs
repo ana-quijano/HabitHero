@@ -16,14 +16,22 @@ namespace HabitHero.Api.Controllers
         private readonly HabitHeroDbContext _db;
         public DashboardController(HabitHeroDbContext db) => _db = db;
 
-        [HttpGet("signup/{username}/{email}/{password}/{confirmpassword}")]
+        /// <summary>
+        /// POST: CREATE NEW USER (SIGN UP)
+        /// </summary>
+        /// <param name="username"></param>
+        /// <param name="email"></param>
+        /// <param name="password"></param>
+        /// <param name="confirmpassword"></param>
+        /// <returns></returns>
+        [HttpPost("signup/{username}/{email}/{password}/{confirmpassword}")]
         public async Task<IActionResult> Signup([FromRoute] string username, [FromRoute] string email,[FromRoute] string password, [FromRoute] string confirmpassword)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            var exists = await _db.Tusers.AnyAsync(u => u.StrEmail == email);
+            var emailExists = await _db.Tusers.AnyAsync(u => u.StrEmail == email);
 
-            if (exists)
+            if (emailExists)
             {
                 return Conflict(new { message = "Email already in use. Please try again." });
             };
@@ -43,26 +51,25 @@ namespace HabitHero.Api.Controllers
             _db.Tusers.Add(user);
             await _db.SaveChangesAsync();
 
-            return Ok($"New account for '{username}' successfully created.");
+            var userId = user.IntUserId;
+
+            return Ok($"New account for '{username}' with User ID 'userId' successfully created.");
         }
 
-        /// POST ACTION: LOGIN (AUTHENTICATE)
         /// <summary>
-        /// Authenticates a user by verifying their username and password.
+        /// GET: USER ID FOR LOG IN
         /// </summary>
-        /// <param name="request">Contains the username and password submitted by the user.</param>
-        /// <returns>
-        /// Returns the user’s <c>IntUserId</c> if the credentials are valid.
-        /// Returns <c>401 Unauthorized</c> if the credentials do not match any record.
-        /// </returns>
-        [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginRequest request)
+        /// <param name="username"></param>
+        /// <param name="password"></param>
+        /// <returns></returns>
+        [HttpGet("login/{username}/{password}")]
+        public async Task<IActionResult> Login([FromRoute] string username, [FromRoute] string password)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
             var user = await _db.Tusers
-                .FirstOrDefaultAsync(u => u.StrUsername == request.StrUsername
-                                    && u.StrPassword == request.StrPassword);
+                .FirstOrDefaultAsync(u => u.StrUsername == username
+                                    && u.StrPassword == password);
 
             if (user == null)
             {
@@ -70,8 +77,9 @@ namespace HabitHero.Api.Controllers
                     { message = "Invalid username or password." });
             }
 
-            return Ok(new
-                { IntUserId = user.IntUserId });
+            var userId = user.IntUserId;
+
+            return Ok($"Successfully logged in user with ID {userId}");
 
         }
 
@@ -99,7 +107,7 @@ namespace HabitHero.Api.Controllers
                 user.IntAvatarId,
                 user.DecPoints,
                 user.MonCash,
-                user.BlnAppRestriction
+                user.IntAppRestrictionId
             });
         }
     }

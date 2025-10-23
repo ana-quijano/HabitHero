@@ -6,19 +6,20 @@ using System.Threading.Tasks;
 
 namespace HabitHero.Core.Entities
 {
-    public class Thabit
+    public class TquestHabit
     {
-        public int IntHabitId { get; set; }
-        public int IntUserId { get; set; }
-        public int? IntScheduleId { get; set; }
-        public string StrHabit { get; set; } = null!;
-        public string? StrDescription { get; set; }
+        public int IntQuestHabitId { get; set; }
+        public int IntQuestId { get; set; }
+        public int IntScheduleId { get; set; }
+        public string StrHabitName { get; set; } = null!;
+        public TimeSpan? DtmReminderTime { get; set; }
         public DateTime? DtmStartDate { get; set; }
         public DateTime? DtmEndDate { get; set; }
-        public TimeSpan? DtmReminderTime { get; set; }
+        public string? StrDescription { get; set; }
+        
 
         // Nav Props
-        public Tuser? Tuser { get; set; }
+        public Tquest? Tquest { get; set; }
         public Tschedule? Tschedule { get; set; }
         public ICollection<ThabitOccurrence> ThabitOccurrences { get; set; } = new List<ThabitOccurrence>();
     }

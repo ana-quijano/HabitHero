@@ -13,6 +13,7 @@ namespace HabitHero.Core.Entities
 
         // Nav Props
         public ICollection<Thabit> Thabits { get; set; } = new List<Thabit>();
+        public ICollection<TquestHabit> TquestHabits { get; set; } = new List<TquestHabit>();
     }
 }
 

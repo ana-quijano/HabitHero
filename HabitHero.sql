@@ -33,7 +33,7 @@ WHERE t.is_ms_shipped = 0;
 EXEC sp_executesql @sql;
 
 -- --------------------------------------------------------------------------------
---	CREATE TABLES
+--	CREATE TABLES 1/2
 -- --------------------------------------------------------------------------------
 CREATE TABLE TSchedules
 (
@@ -58,7 +58,7 @@ CREATE TABLE TUsers
 	,strPassword				VARCHAR(255)	NOT NULL
 	,decPoints					DECIMAL(10,2)	NOT NULL DEFAULT 0
 	,monCash					MONEY			NOT NULL DEFAULT 0
-	,blnAppRestriction			BIT				NOT NULL DEFAULT 0
+	,blnAppRestriction			BIT				NOT NULL DEFAULT 0 -- This has been changed to intAppRestrictionID
 	,intAvatarID				INTEGER			NULL
 	,CONSTRAINT TUsers_PK	PRIMARY KEY ( intUserID )
 )
@@ -96,7 +96,7 @@ CREATE TABLE TUserQuests
 )
 
 -- --------------------------------------------------------------------------------
---	REFERENTIAL INTEGRITY
+--	REFERENTIAL INTEGRITY 1/2
 -- --------------------------------------------------------------------------------
 -- #	Child					Parent					Column
 -- 1	TUsers					TAvatars				intAvatarID
@@ -126,7 +126,7 @@ ALTER TABLE TUserQuests ADD CONSTRAINT TUserQuests_TUsers_FK
 FOREIGN KEY (intUserID) REFERENCES TUsers (intUserID)
 
 -- --------------------------------------------------------------------------------
---	INSERT STATEMENTS
+--	INSERT STATEMENTS 1/2
 -- --------------------------------------------------------------------------------
 
 INSERT INTO TSchedules 
@@ -148,9 +148,9 @@ VALUES	 ('bird.png')
 		,('penguin.png')
 
 INSERT INTO TUsers
-		 (strUserName, strEmail, strPassword, decPoints, monCash, blnAppRestriction, intAvatarID)
-VALUES	 ('Hero123', 'hero123@heromail.com', 'Hero123', 0, 0, 0, 1)
-		,('PlayerABC', 'playerabc@playermail.com', 'PlayerABC', 0, 0, 0, 2)
+		 (strUserName, strEmail, strPassword, decPoints, monCash, intAvatarID)
+VALUES	 ('Hero123', 'hero123@heromail.com', 'Hero123', 0, 0, 1)
+		,('PlayerABC', 'playerabc@playermail.com', 'PlayerABC', 0, 0, 2)
 
 INSERT INTO THabits 
 		  (intUserID, intScheduleID, strHabit, strDescription, dtmStartDate, dtmEndDate, dtmReminderTime)
@@ -158,3 +158,200 @@ VALUES
 		  (1, 2, 'Read 10 pages', 'Read every night before bed', '2025-10-01', NULL, '21:00')
 		 ,(1, 4, '30-min exercise', 'Light workout / walk', '2025-10-03', NULL, '18:00')      
 		 ,(2, 6, 'Practice coding', 'Leetcode / project work', '2025-10-05', NULL, '20:00')   
+
+-- ================================================================================
+--	DB CHANGES 10/21/2025
+-- ================================================================================
+
+-- --------------------------------------------------------------------------------
+--	CREATE TABLES 2/2
+-- --------------------------------------------------------------------------------
+CREATE TABLE TStatuses
+(
+     intStatusID       INTEGER         IDENTITY
+    ,strStatus         VARCHAR(30)     NOT NULL    
+    ,CONSTRAINT TStatuses_PK PRIMARY KEY (intStatusID)
+);
+
+CREATE TABLE THabitOccurrences
+(
+     intHabitOccurrenceID  INTEGER      IDENTITY
+    ,intHabitID				INTEGER      NOT NULL
+	,intQuestHabitID	   INTEGER      NOT NULL
+    ,dtmCompleted          DATETIME     NULL        
+    ,intStatusID           INTEGER      NOT NULL    
+    ,CONSTRAINT THabitOccurrences_PK PRIMARY KEY (intHabitOccurrenceID)
+);
+
+CREATE TABLE TQuestHabits
+(
+     intQuestHabitID	INTEGER         IDENTITY
+    ,intQuestID			INTEGER         NOT NULL
+    ,intScheduleID		INTEGER         NOT NULL
+	,strHabitName		VARCHAR(100)	NOT NULL
+	,dtmReminderTime	TIME			NULL
+	,dtmStartDate		DATE			NULL
+	,dtmEndDate			DATE			NULL
+	,strDescription		VARCHAR(500)	NULL
+    ,CONSTRAINT TQuestHabits_PK PRIMARY KEY (intQuestHabitID)
+);
+
+CREATE TABLE TAchievements
+(
+     intAchievementID   INTEGER         IDENTITY
+    ,strAchievement     VARCHAR(150)    NOT NULL
+    ,CONSTRAINT TAchievements_PK PRIMARY KEY (intAchievementID)
+);
+
+CREATE TABLE TUserAchievements
+(
+     intUserAchievementID  INTEGER      IDENTITY
+    ,intUserID             INTEGER      NOT NULL
+    ,intAchievementID      INTEGER      NOT NULL
+    ,CONSTRAINT TUserAchievements_PK PRIMARY KEY (intUserAchievementID)
+);
+
+CREATE TABLE TItemTypes
+(
+     intItemTypeID     INTEGER         IDENTITY
+    ,strItemType       VARCHAR(50)     NOT NULL     
+    ,CONSTRAINT TItemTypes_PK PRIMARY KEY (intItemTypeID)
+);
+
+CREATE TABLE TAppRestrictions
+(
+     intAppRestrictionID  INTEGER       IDENTITY
+    ,strAppName           VARCHAR(100)  NOT NULL
+    ,blnRestricted        BIT           NOT NULL DEFAULT 1
+    ,CONSTRAINT TAppRestrictions_PK PRIMARY KEY (intAppRestrictionID)
+);
+
+CREATE TABLE TItemTiers
+(
+     intItemTierID    INTEGER        IDENTITY
+    ,strItemTier      VARCHAR(50)    NOT NULL          
+    ,CONSTRAINT TItemTiers_PK PRIMARY KEY (intItemTierID)
+);
+
+CREATE TABLE TItems
+(
+     intItemID        INTEGER         IDENTITY
+    ,strItem         VARCHAR(100)    NOT NULL
+	,intItemTypeID    INTEGER        NOT NULL
+	,intItemTierID    INTEGER        NOT NULL
+    ,CONSTRAINT TItems_PK PRIMARY KEY (intItemID)
+);
+
+-- --------------------------------------------------------------------------------
+--  REFERENTIAL INTEGRITY 2/2
+-- --------------------------------------------------------------------------------
+-- #  Child                 Parent              Column(s)
+-- 6  THabitOccurrences     THabits				intUserHabitID
+-- 7  THabitOccurrences     TQuestHabits        intQuestHabitID
+-- 8  THabitOccurrences     TStatuses           intStatusID
+-- 9  TQuestHabits          TQuests             intQuestID
+-- 10 TQuestHabits          TSchedules	        intScheduleID
+-- 11 TItems                TItemTiers          intItemTierID
+-- 12 TItems                TItemTypes          intItemTypeID
+-- 13 TUsers				TAppRestrictions	intAppRestrictionID
+-- 14 TUserAchievements		TUsers				intUserID
+-- 15 TUserAchievements		TAchievements		intAchievementID
+
+-- 6
+ALTER TABLE THabitOccurrences ADD CONSTRAINT THabitOccurrences_THabits_FK
+    FOREIGN KEY (intHabitID) REFERENCES THabits (intHabitID);
+
+-- 7
+ALTER TABLE THabitOccurrences ADD CONSTRAINT THabitOccurrences_TQuestHabits_FK
+    FOREIGN KEY (intQuestHabitID) REFERENCES TQuestHabits (intQuestHabitID);
+
+-- 8
+ALTER TABLE THabitOccurrences ADD CONSTRAINT THabitOccurrences_TStatuses_FK
+    FOREIGN KEY (intStatusID) REFERENCES TStatuses (intStatusID);
+
+-- 9
+ALTER TABLE TQuestHabits ADD CONSTRAINT TQuestHabits_TQuests_FK
+    FOREIGN KEY (intQuestID) REFERENCES TQuests (intQuestID);
+
+-- 10
+ALTER TABLE TQuestHabits ADD CONSTRAINT TQuestHabits_TSchedules_FK
+    FOREIGN KEY (intScheduleID) REFERENCES TSchedules (intScheduleID);
+
+-- 11
+ALTER TABLE TItems ADD CONSTRAINT TItems_TItemTiers_FK
+    FOREIGN KEY (intItemTierID) REFERENCES TItemTiers (intItemTierID);
+
+-- 12
+ALTER TABLE TItems ADD CONSTRAINT TItems_TItemTypes_FK
+    FOREIGN KEY (intItemTypeID) REFERENCES TItemTypes (intItemTypeID);
+
+-- 13
+--ALTER TABLE TUsers ADD CONSTRAINT TUsers_TAppRestrictions_FK
+--FOREIGN KEY (intAppRestrictionID) REFERENCES TAppRestrictions (intAppRestrictionID);
+
+-- 14
+ALTER TABLE TUserAchievements ADD CONSTRAINT TUserAchievements_TUsers_FK
+FOREIGN KEY (intUserID) REFERENCES TUsers (intUserID)
+
+-- 15
+ALTER TABLE TUserAchievements ADD CONSTRAINT TUserAchievements_TAchievements_FK
+FOREIGN KEY (intAchievementID) REFERENCES TAchievements (intAchievementID)
+
+--------------------------------------------------------------------------------
+-- Updates to TUsers (Drop blnAppRestrictions, Add intAppRestrictionID as FK)
+--------------------------------------------------------------------------------
+
+USE dbHabitHero;
+SET NOCOUNT ON;
+SET XACT_ABORT ON;
+
+BEGIN TRAN;
+
+-- Drop TUsers.blnAppRestriction (and any default constraint bound to it)
+IF COL_LENGTH(N'dbo.TUsers', N'blnAppRestriction') IS NOT NULL
+BEGIN
+    DECLARE @dfName sysname;
+
+    SELECT @dfName = dc.name
+    FROM sys.default_constraints AS dc
+    INNER JOIN sys.columns AS c
+        ON c.object_id = dc.parent_object_id
+       AND c.column_id = dc.parent_column_id
+    WHERE dc.parent_object_id = OBJECT_ID(N'dbo.TUsers')
+      AND c.name = N'blnAppRestriction';
+
+    IF @dfName IS NOT NULL
+        EXEC(N'ALTER TABLE dbo.TUsers DROP CONSTRAINT [' + @dfName + N'];');
+
+    ALTER TABLE dbo.TUsers DROP COLUMN blnAppRestriction;
+END;
+
+-- Add TUsers.intAppRestrictionID (nullable)
+IF COL_LENGTH(N'dbo.TUsers', N'intAppRestrictionID') IS NULL
+BEGIN
+    ALTER TABLE dbo.TUsers
+        ADD intAppRestrictionID INT NULL;
+END;
+
+--------------------------------------------------------------------------------
+-- Add Referential Integrity for TUsers -> TAppRestrictions
+--------------------------------------------------------------------------------
+IF NOT EXISTS
+(
+    SELECT 1
+    FROM sys.foreign_keys fk
+    WHERE fk.parent_object_id = OBJECT_ID(N'dbo.TUsers')
+      AND fk.name = N'TUsers_TAppRestrictions_FK'
+)
+BEGIN
+    ALTER TABLE dbo.TUsers
+        WITH CHECK
+        ADD CONSTRAINT TUsers_TAppRestrictions_FK
+            FOREIGN KEY (intAppRestrictionID)
+            REFERENCES dbo.TAppRestrictions (intAppRestrictionID);
+
+    ALTER TABLE dbo.TUsers CHECK CONSTRAINT TUsers_TAppRestrictions_FK;
+END;
+
+COMMIT;
+
