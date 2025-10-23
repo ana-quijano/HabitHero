@@ -165,7 +165,6 @@ namespace HabitHero.Infrastructure.Data
                 entity.Property(e => e.IntScheduleId).HasColumnName("intScheduleID");
                 entity.Property(e => e.StrHabit)
                       .HasColumnName("strHabit")
-                      .IsRequired()
                       .HasColumnType("varchar(255)")
                       .HasMaxLength(255);
                 entity.Property(e => e.StrDescription)

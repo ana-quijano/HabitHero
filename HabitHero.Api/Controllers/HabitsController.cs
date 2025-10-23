@@ -32,7 +32,6 @@ namespace HabitHero.Api.Controllers
                 {
                     h.IntHabitId,
                     h.StrHabit,      
-                    h.IntScheduleId,    
                     h.StrDescription
                 })
                 .ToListAsync();
@@ -80,7 +79,6 @@ namespace HabitHero.Api.Controllers
                 {
                     h.IntHabitId,
                     h.StrHabit,
-                    h.IntScheduleId,
                     h.StrDescription
                 })
                 .ToListAsync();
