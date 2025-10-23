@@ -10,7 +10,7 @@ namespace HabitHero.Core.Entities
     {
         public int IntHabitId { get; set; }
         public int IntUserId { get; set; }
-        public int IntScheduleId { get; set; }
+        public int? IntScheduleId { get; set; }
         public string StrHabit { get; set; } = null!;
         public string? StrDescription { get; set; }
         public DateTime? DtmStartDate { get; set; }
