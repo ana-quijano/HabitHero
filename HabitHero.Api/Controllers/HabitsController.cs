@@ -66,6 +66,7 @@ namespace HabitHero.Api.Controllers
             {
                 IntUserId = userId,
                 StrHabit = strHabit,
+                IntScheduleId = 1,
                 StrDescription = strDescription
             };
 
@@ -79,6 +80,7 @@ namespace HabitHero.Api.Controllers
                 {
                     h.IntHabitId,
                     h.StrHabit,
+                    h.IntScheduleId,
                     h.StrDescription
                 })
                 .ToListAsync();

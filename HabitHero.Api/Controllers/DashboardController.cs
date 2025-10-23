@@ -80,7 +80,6 @@ namespace HabitHero.Api.Controllers
             var userId = user.IntUserId;
 
             return Ok($"Successfully logged in user with ID {userId}");
-
         }
 
         /// GET ACTION: GET USER BY ID
