@@ -15,6 +15,8 @@ namespace HabitHero.Core.Entities
         public DateTime? DtmStartDate { get; set; }
         public DateTime? DtmEndDate { get; set; }
 
+        // Nav Props
         public ICollection<TuserQuest> TuserQuests { get; set; } = new List<TuserQuest>();
+        public ICollection<TquestHabit> TquestHabits { get; set; } = new List<TquestHabit>();
     }
 }

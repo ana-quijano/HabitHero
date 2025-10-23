@@ -6,13 +6,14 @@ using System.Threading.Tasks;
 
 namespace HabitHero.Core.Entities
 {
-    public class TuserQuest
+    public class TuserAchievement
     {
-        public int IntUserQuestId { get; set; }
+        public int IntUserAchievementId { get; set; }
         public int IntUserId { get; set; }
-        public int IntQuestId { get; set; }
+        public int IntAchievementId { get; set; }
 
+        // Nav Props
         public Tuser? Tuser { get; set; }
-        public Tquest? Tquest { get; set; }
+        public Tachievement? Tachievement { get; set; }
     }
 }
