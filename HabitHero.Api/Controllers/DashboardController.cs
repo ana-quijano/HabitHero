@@ -24,7 +24,7 @@ namespace HabitHero.Api.Controllers
         /// <param name="password"></param>
         /// <param name="confirmpassword"></param>
         /// <returns></returns>
-        [HttpPost("signup/{username}/{email}/{password}/{confirmpassword}")]
+        [HttpGet("signup/{username}/{email}/{password}/{confirmpassword}")]
         public async Task<IActionResult> Signup([FromRoute] string username, [FromRoute] string email,[FromRoute] string password, [FromRoute] string confirmpassword)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
