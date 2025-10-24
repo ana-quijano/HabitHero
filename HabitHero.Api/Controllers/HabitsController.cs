@@ -50,7 +50,7 @@ namespace HabitHero.Api.Controllers
         /// <param name="strHabit"></param>
         /// <param name="strDescription"></param>
         /// <returns>Updated list of habits</returns>
-        [HttpPost("api/habits/{userId}/{strHabit}/{strDescription}")]
+        [HttpGet("api/habits/{userId}/{strHabit}/{strDescription}")]
         public async Task<IActionResult> CreateHabit([FromRoute] int userId, [FromRoute] string strHabit, [FromRoute] string strDescription)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
