@@ -57,29 +57,34 @@ namespace HabitHero.Api.Controllers
         }
 
         /// <summary>
-        /// GET: USER ID FOR LOG IN
+        /// POST: USER LOGIN
         /// </summary>
-        /// <param name="username"></param>
-        /// <param name="password"></param>
+        /// <param name="request"></param>
         /// <returns></returns>
-        [HttpGet("login/{username}/{password}")]
-        public async Task<IActionResult> Login([FromRoute] string username, [FromRoute] string password)
+        [HttpPost("signin")]
+        public async Task<IActionResult> Signin([FromBody] LoginRequest request)
         {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
             var user = await _db.Tusers
-                .FirstOrDefaultAsync(u => u.StrUsername == username
-                                    && u.StrPassword == password);
+                .AsNoTracking()
+                .FirstOrDefaultAsync(u =>
+                    u.StrEmail == request.StrEmail &&
+                    u.StrPassword == request.StrPassword);
 
             if (user == null)
             {
-                return Unauthorized(new 
-                    { message = "Invalid username or password." });
+                return Unauthorized(new { message = "Invalid email or password." });
             }
 
-            var userId = user.IntUserId;
-
-            return Ok($"Successfully logged in user with ID {userId}");
+            // Return user info in JSON so the app can use it
+            return Ok(new
+            {
+                intUserId = user.IntUserId,
+                strUsername = user.StrUsername,
+                strEmail = user.StrEmail
+            });
         }
 
         /// GET ACTION: GET USER BY ID
