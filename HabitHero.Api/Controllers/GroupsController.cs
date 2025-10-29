@@ -15,87 +15,80 @@ namespace HabitHero.Api.Controllers
         public GroupsController(HabitHeroDbContext db) => _db = db;
 
 
-        //// Get: api/groups
-        //[HttpGet("GetAllGroups/{id}")]
-        //public async Task<ActionResult<IEnumerable<ThabitGroup>>> GetGroups()
-        //{
-        //    return await _db.ThabitGroups.ToListAsync();
-        //}
-
-
-        ////Get: Group ID
-        //[HttpGet("GetSingleGroup/{id:int}")]
-        //public async Task<ActionResult<ThabitGroup>> GetGroup(int id)
-        //{
-        //    var group = await _db.ThabitGroups.FindAsync(id);
-        //    if (group == null)
-        //    {
-        //        return NotFound(new { message = "Group not found." });
-        //    }
-
-        //    return Ok(group);
-        //}
-
-
         //Post: Create Group
-        [HttpPut("CreateGroup/{groupname}/{groupdescription}")]
-        public async Task<IActionResult> CreateGroup([FromRoute] string groupname, [FromRoute] string groupdescription)
+        [HttpGet("CreateGroup/{strQuestName}/{monMoneyPot}/{decPointsPot}/{dtmStartDate}/{dtmEndDate}")]
+        public async Task<IActionResult> CreateGroup([FromRoute] string strQuestName, [FromRoute] decimal monMoneyPot, [FromRoute] decimal decPointsPot, [FromRoute] DateTime dtmStartDate, [FromRoute] DateTime dtmEndDate)
         {
             if (!ModelState.IsValid)
             { 
                 return BadRequest(ModelState);
             }
 
-            var userGroup = new ThabitGroup
+            var existingQuest = await _db.Tquests.FirstOrDefaultAsync(q => q.StrQuestName == strQuestName);
+
+            if (existingQuest != null)
             {
-                StrGroupName = groupname,
-                StrDescription = groupdescription,
+                return Conflict(new { message = $"Group-Quest '{strQuestName}' already exist." });
+            }
+
+            var groupQuest = new Tquest
+            {
+                StrQuestName = strQuestName,
+                MonMoneyPot = monMoneyPot,
+                DecPointsPot = decPointsPot,
+                DtmStartDate = dtmStartDate,
+                DtmEndDate = dtmEndDate
             };
 
-            _db.ThabitGroups.Add(userGroup);
+            _db.Tquests.Add(groupQuest);
             await _db.SaveChangesAsync();
 
-            return Ok($"New Habit-Group for '{groupname}' successfully created.");
+            var userId = groupQuest.IntQuestId;
+
+            return Ok($"New Group-Quest for '{userId}' successfully created.");
         }
 
 
         //Put: Update Group 
-        [HttpPut("UpdateGroup/{groupname}/{newgroupname}/{newgroupdescription}")]
-        public async Task<ActionResult> UpdateGroup([FromRoute] string groupname, [FromRoute] string newgroupname, [FromRoute] string newgroupdescription)
+        [HttpPost("UpdateGroup/{intQuestId}/{strQuestName}/{monMoneyPot}/{decPointsPot}/{dtmStartDate}/{dtmEndDate}")]
+        public async Task<ActionResult> UpdateGroup([FromRoute] int intQuestId, [FromRoute] string strQuestName, [FromRoute] decimal monMoneyPot, [FromRoute] decimal decPointsPot, [FromRoute] DateTime dtmStartDate, [FromRoute] DateTime dtmEndDate)
         {
             if (!ModelState.IsValid)
             { 
                 return BadRequest(ModelState);
             }
 
-            var existingGroup = await _db.ThabitGroups.FirstOrDefaultAsync(g => g.StrGroupName == groupname);
+            var existingGroup = await _db.Tquests.FirstOrDefaultAsync(g => g.IntQuestId == intQuestId);
 
             if (existingGroup == null)
             {
-                return NotFound(new { message = "Group not found." });
+                return NotFound(new { message = "QuestID not found." });
             }
 
-            existingGroup.StrGroupName = newgroupname;
-            existingGroup.StrDescription = newgroupdescription;
+            existingGroup.StrQuestName = strQuestName;
+            existingGroup.MonMoneyPot = monMoneyPot;
+            existingGroup.DecPointsPot = decPointsPot;
+            existingGroup.DtmStartDate = dtmStartDate;
+            existingGroup.DtmEndDate = dtmEndDate;
 
             await _db.SaveChangesAsync();
-            
-            return Ok($"'Group '{newgroupname}' successfully Updated.");
+
+            return Ok($"QuestID '{intQuestId}' succesfully uploaded to '{strQuestName}'.");
         }
 
 
         //Delete: Delete Group
-        [HttpDelete("DeleteGroup/{id:int}")]
+        [HttpPost("DeleteGroup/{id:int}")]
         public async Task<IActionResult> DeleteGroup(int id)
         {
-            var group = await _db.ThabitGroups.FindAsync(id);
+            var group = await _db.Tquests.FindAsync(id);
 
             if (group == null)
             {
                 return NotFound(new { message = "Group not found." });
             }
 
-            _db.ThabitGroups.Remove(group);
+            _db.Tquests.Remove(group);
             await _db.SaveChangesAsync();
 
             return Ok($"Group successfully Deleted.");
@@ -104,7 +97,7 @@ namespace HabitHero.Api.Controllers
 
         private bool GroupExists(int id)
         {
-            return _db.ThabitGroups.Any(e => e.IntGroupID == id);
+            return _db.Tquests.Any(e => e.IntQuestId == id);
         }
     }
 }
