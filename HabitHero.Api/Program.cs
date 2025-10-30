@@ -21,8 +21,8 @@ builder.Services.AddCors(options =>
             .AllowAnyMethod());
 });
 var db = "dbServerConnection";
-//var local = "DefaultConnection";
-var local = "dbServerConnection";
+var local = "DefaultConnection";
+//var local = "dbServerConnection";
 var conn = builder.Configuration.GetConnectionString(local); // Set in secrets.json
 builder.Services.AddDbContext<HabitHeroDbContext>(o => o.UseSqlServer(conn));
 
@@ -34,6 +34,13 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+
+if (app.Environment.IsDevelopment())
+{
+    app.Urls.Clear();
+    app.Urls.Add("http://0.0.0.0:7098");   // reachable from your phone
+    app.Urls.Add("http://localhost:7098");
+}
 
 app.UseSwagger();
 app.UseSwaggerUI();
