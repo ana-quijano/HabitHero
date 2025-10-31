@@ -70,7 +70,7 @@ namespace HabitHero.Api.Controllers
             var user = await _db.Tusers
                 .AsNoTracking()
                 .FirstOrDefaultAsync(u =>
-                    u.StrEmail == request.StrEmail &&
+                    u.StrUsername == request.StrUsername &&
                     u.StrPassword == request.StrPassword);
 
             if (user == null)

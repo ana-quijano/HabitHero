@@ -1,4 +1,5 @@
 ﻿using HabitHero.Core.Entities;
+using HabitHero.Core.Models.Auth;
 using HabitHero.Infrastructure.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -11,13 +12,14 @@ namespace HabitHero.Api.Controllers
         public HabitsController(HabitHeroDbContext db) => _db = db;
 
         /// <summary>
-        /// GET: User Habits
+        /// GET: User's Habit Occurrences for Today
         /// </summary>
         /// <param name="userId"></param>
         /// <returns></returns>
-        [HttpGet("api/menu/{userId}")] 
+        [HttpGet("api/menu/{userId}")]
         public async Task<IActionResult> GetHabits([FromRoute] int userId)
         {
+            // Check if user exists
             var userExists = await _db.Tusers
                 .AsNoTracking()
                 .AnyAsync(u => u.IntUserId == userId);
@@ -25,21 +27,33 @@ namespace HabitHero.Api.Controllers
             if (!userExists)
                 return NotFound(new { message = "User not found." });
 
-            var habits = await _db.Thabits
+            // Get today's date (without time)
+            var today = DateTime.Today;
+
+            // Join THabitOccurrences with THabits for this user and today's date
+            var habitsToday = await _db.ThabitOccurrences
                 .AsNoTracking()
-                .Where(h => h.IntUserId == userId)
-                .Select(h => new
-                {
-                    h.IntHabitId,
-                    h.StrHabit,      
-                    h.StrDescription
-                })
+                .Where(o =>
+                    o.DtmDate >= today &&
+                    o.DtmDate < today.AddDays(1) &&
+                    _db.Thabits.Any(h => h.IntHabitId == o.IntHabitId && h.IntUserId == userId))
+                .Join(_db.Thabits,
+                    o => o.IntHabitId,
+                    h => h.IntHabitId,
+                    (o, h) => new
+                    {
+                        h.IntHabitId,
+                        h.StrHabit,
+                        h.StrDescription,
+                        o.DtmDate,
+                        o.IntStatusId
+                    })
                 .ToListAsync();
 
             return Ok(new
             {
                 userId,
-                habits
+                habits = habitsToday
             });
         }
 
@@ -50,32 +64,30 @@ namespace HabitHero.Api.Controllers
         /// <param name="strHabit"></param>
         /// <param name="strDescription"></param>
         /// <returns>Updated list of habits</returns>
-        [HttpGet("api/habits/{userId}/{strHabit}/{strDescription}")]
-        public async Task<IActionResult> CreateHabit([FromRoute] int userId, [FromRoute] string strHabit, [FromRoute] string strDescription)
+        [HttpPost("api/habits/addhabit")]
+        public async Task<IActionResult> AddHabit([FromBody] AddHabitRequest request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
             var userExists = await _db.Tusers
                 .AsNoTracking()
-                .AnyAsync(u => u.IntUserId == userId);
+                .AnyAsync(u => u.IntUserId == request.IntUserId);
 
             if (!userExists)
                 return NotFound(new { message = "User not found." });
 
             var newHabit = new Thabit
             {
-                IntUserId = userId,
-                StrHabit = strHabit,
-                IntScheduleId = 1,
-                StrDescription = strDescription
+                IntUserId = request.IntUserId,
+                StrHabit = request.StrHabit,
+                StrDescription = request.StrDescription
             };
 
             _db.Thabits.Add(newHabit);
             await _db.SaveChangesAsync();
 
             var updatedHabits = await _db.Thabits
-                .AsNoTracking()
-                .Where(h => h.IntUserId == userId)
+                .Where(h => h.IntUserId == request.IntUserId)
                 .Select(h => new
                 {
                     h.IntHabitId,
