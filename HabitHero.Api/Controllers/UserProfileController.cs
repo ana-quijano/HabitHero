@@ -16,7 +16,7 @@ namespace HabitHero.Api.Controllers
 		// ---------------------------------------------------------------------
 		// GET: profile basics for a user
 		// ---------------------------------------------------------------------
-		[HttpGet("{userId:int}")]
+		[HttpGet("/getProfile/{userId:int}")]
 		public async Task<IActionResult> GetProfile([FromRoute] int userId) 
 		{
 			var user = await _db.Tusers
@@ -41,9 +41,9 @@ namespace HabitHero.Api.Controllers
 		}
 
 		// ---------------------------------------------------------------------
-		// POST: update username and email
+		// GET: update username and email
 		// ---------------------------------------------------------------------
-		[HttpPost("update/{userId:int}/{username}/{email}")]
+		[HttpGet("/updateUsername/{userId:int}/{username}/{email}")]
 		public async Task<IActionResult> UpdateAccount([FromRoute] int userId,[FromRoute] string username,[FromRoute] string email)
 		{
 			if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -65,9 +65,9 @@ namespace HabitHero.Api.Controllers
 		}
 
 		// ---------------------------------------------------------------------
-		// POST: change password
+		// GET: change password
 		// ---------------------------------------------------------------------
-		[HttpPost("password/{userId:int}/{oldPassword}/{newPassword}/{confirmPassword}")]
+		[HttpGet("/updatePassword/{userId:int}/{oldPassword}/{newPassword}/{confirmPassword}")]
 		public async Task<IActionResult> ChangePassword([FromRoute] int userId,[FromRoute] string oldPassword,[FromRoute] string newPassword,[FromRoute] string confirmPassword) 
 		{
 			if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -120,9 +120,9 @@ namespace HabitHero.Api.Controllers
 		//}
 
 		// ---------------------------------------------------------------------
-		// POST: delete an account (and related data) after password check
+		// GET: delete an account (and related data) after password check
 		// ---------------------------------------------------------------------
-		[HttpPost("delete/{userId:int}/{password}")]
+		[HttpGet("deleteAccount/{userId:int}/{password}")]
 		public async Task<IActionResult> DeleteAccount([FromRoute] int userId,[FromRoute] string password) 
 		{
 			if (!ModelState.IsValid) return BadRequest(ModelState);
