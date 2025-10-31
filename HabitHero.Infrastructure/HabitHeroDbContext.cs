@@ -25,7 +25,7 @@ namespace HabitHero.Infrastructure.Data
         public DbSet<TitemTier> TitemTiers { get; set; }
         public DbSet<TitemType> TitemTypes { get; set; }
         public DbSet<TappRestriction> TappRestrictions { get; set; }
-
+        public DbSet<TavatarItem> TavatarItems { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             // ---------------- TUsers ----------------
@@ -516,8 +516,15 @@ namespace HabitHero.Infrastructure.Data
                 entity.Property(e => e.StrItem)
                       .HasColumnName("strItem")
                       .IsRequired()
-                      .HasColumnType("varchar(100)")
+                      .HasColumnType("VARCHAR(100)")
                       .HasMaxLength(100);
+                entity.Property(e => e.StrSlug)
+                      .HasColumnName("strSlug")
+                      .HasColumnType("VARCHAR(255)")
+                      .HasMaxLength(100);
+                entity.Property(e => e.IntPrice)
+                      .HasColumnName("intPrice")
+                      .HasColumnType("INTEGER");
                 entity.Property(e => e.IntItemTypeId)
                       .HasColumnName("intItemTypeID");
                 entity.Property(e => e.IntItemTierId)
@@ -536,6 +543,38 @@ namespace HabitHero.Infrastructure.Data
                       .HasForeignKey(i => i.IntItemTierId)
                       .HasConstraintName("TItems_TItemTiers_FK")
                       .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // ---------------- TAvatarItems ----------------
+            modelBuilder.Entity<TavatarItem>(entity =>
+            {
+                entity.ToTable("TAvatarItems");
+                entity.HasKey(e => e.IntAvatarItemId)
+                      .HasName("TAvatarItems_PK");
+                entity.Property(e => e.IntAvatarItemId)
+                      .HasColumnName("intAvatarItemID")
+                      .UseIdentityColumn();
+                entity.Property(e => e.IntAvatarId)
+                      .HasColumnName("intAvatarID")
+                      .IsRequired();
+                entity.Property(e => e.IntItemId)
+                      .HasColumnName("intItemID")
+                      .IsRequired();
+                entity.Property(e => e.IntQuantity)
+                      .HasColumnName("intQuantity")
+                      .IsRequired();
+
+                entity.HasOne(e => e.Tavatar)
+                      .WithMany(a => a.TavatarItems) 
+                      .HasForeignKey(e => e.IntAvatarId)
+                      .HasConstraintName("TAvatarItems_TAvatars_FK")
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(e => e.Titem) 
+                      .WithMany(i => i.TavatarItems) 
+                      .HasForeignKey(e => e.IntItemId)
+                      .HasConstraintName("TAvatarItems_TItems_FK")
+                      .OnDelete(DeleteBehavior.Cascade);
             });
         }
 
