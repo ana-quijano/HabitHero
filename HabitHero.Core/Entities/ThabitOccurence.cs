@@ -11,7 +11,7 @@ namespace HabitHero.Core.Entities
     {
         public int IntHabitOccurrenceId { get; set; }
         public int IntHabitId { get; set; }
-        public int IntQuestHabitId { get; set; }
+        public int? IntQuestHabitId { get; set; }
         public DateTime? DtmDate { get; set; }
         public int IntStatusId { get; set; }
 
