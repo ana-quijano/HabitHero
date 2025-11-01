@@ -8,7 +8,7 @@ namespace HabitHero.Core.Models.Auth
 {
     public class LoginRequest
     {
-        public string StrEmail { get; set; } = null!;
+        public string StrUsername { get; set; } = null!;
         public string StrPassword { get; set; } = null!;
     }
 }

@@ -306,8 +306,8 @@ namespace HabitHero.Infrastructure.Data
                       .HasColumnName("intQuestHabitID");
                 entity.Property(e => e.IntStatusId)
                       .HasColumnName("intStatusID");
-                entity.Property(e => e.DtmCompleted)
-                      .HasColumnName("dtmCompleted")
+                entity.Property(e => e.DtmDate)
+                      .HasColumnName("dtmDate")
                       .HasColumnType("datetime");
 
                 // FK: HabitOccurrences -> Habits
