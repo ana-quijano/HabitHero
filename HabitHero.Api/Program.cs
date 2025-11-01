@@ -20,9 +20,9 @@ builder.Services.AddCors(options =>
             .AllowAnyHeader()
             .AllowAnyMethod());
 });
-//var db = "dbServerConnection";
-var local = "DefaultConnection";        // LOCAL
-//var local = "dbServerConnection";     // SEVER
+var db = "dbServerConnection";
+//var local = "DefaultConnection";        // LOCAL
+var local = "dbServerConnection";     // SEVER
 var conn = builder.Configuration.GetConnectionString(local); // Set in secrets.json
 builder.Services.AddDbContext<HabitHeroDbContext>(o => o.UseSqlServer(conn));
 
