@@ -18,6 +18,7 @@ namespace HabitHero.Infrastructure.Data
         public DbSet<TuserQuest> TuserQuests { get; set; }
         public DbSet<TquestHabit> TquestHabits { get; set; }
         public DbSet<ThabitOccurrence> ThabitOccurrences { get; set; }
+        public DbSet<TavatarItem> TavatarItems { get; set; }
         public DbSet<Tstatus> Tstatuses { get; set; }
         public DbSet<Tachievement> Tachievements { get; set; }
         public DbSet<TuserAchievement> TuserAchievements { get; set; }
@@ -537,6 +538,47 @@ namespace HabitHero.Infrastructure.Data
                       .HasConstraintName("TItems_TItemTiers_FK")
                       .OnDelete(DeleteBehavior.Restrict);
             });
+            // ---------------- TAvatarItems ----------------
+            modelBuilder.Entity<TavatarItem>(entity =>
+            {
+                entity.ToTable("TAvatarItems");
+
+                // Primary Key
+                entity.HasKey(e => e.IntAvatarItemId).HasName("TAvatarItems_PK");
+
+                // Columns
+                entity.Property(e => e.IntAvatarItemId)
+                        .HasColumnName("intAvatarItemID")
+                        .UseIdentityColumn();
+
+                entity.Property(e => e.IntAvatarId)
+                        .HasColumnName("intAvatarID")
+                        .IsRequired();
+
+                entity.Property(e => e.IntItemId)
+                        .HasColumnName("intItemID")
+                        .IsRequired();
+
+                entity.Property(e => e.IntQuantity)
+                        .HasColumnName("intQuantity")
+                        .HasDefaultValue(0);
+
+                // Relationships
+                // One Avatar -> many AvatarItems
+                entity.HasOne(ai => ai.Tavatar)
+                        .WithMany(a => a.TavatarItems)
+                        .HasForeignKey(ai => ai.IntAvatarId)
+                        .HasConstraintName("TAvatarItems_TAvatars_FK")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                // One Item -> many AvatarItems
+                entity.HasOne(ai => ai.Titem)
+                        .WithMany(i => i.TavatarItems)
+                        .HasForeignKey(ai => ai.IntItemId)
+                        .HasConstraintName("TAvatarItems_TItems_FK")
+                        .OnDelete(DeleteBehavior.Restrict);
+            });
+
         }
 
     }
