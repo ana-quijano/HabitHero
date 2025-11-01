@@ -27,7 +27,8 @@ namespace HabitHero.Api.Controllers
 					u.StrUsername,
 					u.StrEmail,
 					u.StrPassword,
-					u.DecPoints,
+					u.IntPoints,
+					u.IntTotalPoints,
 					u.MonCash,
 					u.IntAvatarId,
 					u.IntAppRestrictionId

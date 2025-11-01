@@ -51,10 +51,14 @@ namespace HabitHero.Infrastructure.Data
                       .IsRequired()
                       .HasColumnType("varchar(255)")
                       .HasMaxLength(255);
-                entity.Property(e => e.DecPoints)
-                      .HasColumnName("decPoints")
-                      .HasColumnType("decimal(10,2)")
-                      .HasDefaultValue(0m);
+                entity.Property(e => e.IntPoints)
+                      .HasColumnName("intPoints")
+                      .HasColumnType("Integer")
+                      .HasDefaultValue(0);
+                entity.Property(e => e.IntTotalPoints)
+                      .HasColumnName("intTotalPoints")
+                      .HasColumnType("Integer")
+                      .HasDefaultValue(0);
                 entity.Property(e => e.MonCash)
                       .HasColumnName("monCash")
                       .HasColumnType("money")

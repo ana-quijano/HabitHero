@@ -109,7 +109,8 @@ namespace HabitHero.Api.Controllers
                 user.StrUsername,
                 user.StrEmail,
                 user.IntAvatarId,
-                user.DecPoints,
+                user.IntPoints,
+                user.IntTotalPoints,
                 user.MonCash,
                 user.IntAppRestrictionId
             });
