@@ -26,7 +26,6 @@ namespace HabitHero.Infrastructure.Data
         public DbSet<TitemTier> TitemTiers { get; set; }
         public DbSet<TitemType> TitemTypes { get; set; }
         public DbSet<TappRestriction> TappRestrictions { get; set; }
-        public DbSet<TavatarItem> TavatarItems { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             // ---------------- TUsers ----------------
