@@ -19,41 +19,32 @@ namespace HabitHero.Api.Controllers
         [HttpGet("api/menu/{userId}")]
         public async Task<IActionResult> GetHabits([FromRoute] int userId)
         {
-            // Check if user exists
-            var userExists = await _db.Tusers
-                .AsNoTracking()
-                .AnyAsync(u => u.IntUserId == userId);
+            var user = await _db.Tusers.AsNoTracking()
+                .FirstOrDefaultAsync(u => u.IntUserId == userId);
+            if (user == null) return NotFound(new { message = "User not found." });
 
-            if (!userExists)
-                return NotFound(new { message = "User not found." });
-
-            // Get today's date (without time)
             var today = DateTime.Today;
 
-            // Join THabitOccurrences with THabits for this user and today's date
             var habitsToday = await _db.ThabitOccurrences
                 .AsNoTracking()
-                .Where(o =>
-                    o.DtmDate >= today &&
-                    o.DtmDate < today.AddDays(1) &&
-                    _db.Thabits.Any(h => h.IntHabitId == o.IntHabitId && h.IntUserId == userId))
-                .Join(_db.Thabits,
-                    o => o.IntHabitId,
-                    h => h.IntHabitId,
-                    (o, h) => new
-                    {
-                        o.IntHabitOccurrenceId,
-                        h.IntHabitId,
-                        h.StrHabit,
-                        h.StrDescription,
-                        o.DtmDate,
-                        o.IntStatusId
-                    })
+                .Where(o => o.DtmDate >= today && o.DtmDate < today.AddDays(1)
+                            && _db.Thabits.Any(h => h.IntHabitId == o.IntHabitId && h.IntUserId == userId))
+                .Join(_db.Thabits, o => o.IntHabitId, h => h.IntHabitId, (o, h) => new { o, h })
+                .Join(_db.Tstatuses, oh => oh.o.IntStatusId, s => s.IntStatusId, (oh, s) => new
+                {
+                    oh.o.IntHabitOccurrenceId,   
+                    oh.h.IntHabitId,
+                    oh.h.StrHabit,
+                    oh.h.StrDescription,
+                    oh.o.DtmDate,
+                    StrStatus = s.StrStatus      
+                })
                 .ToListAsync();
 
             return Ok(new
             {
                 userId,
+                points = user.IntPoints,   
                 habits = habitsToday
             });
         }
