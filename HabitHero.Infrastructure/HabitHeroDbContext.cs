@@ -18,7 +18,6 @@ namespace HabitHero.Infrastructure.Data
         public DbSet<TuserQuest> TuserQuests { get; set; }
         public DbSet<TquestHabit> TquestHabits { get; set; }
         public DbSet<ThabitOccurrence> ThabitOccurrences { get; set; }
-        public DbSet<TavatarItem> TavatarItems { get; set; }
         public DbSet<Tstatus> Tstatuses { get; set; }
         public DbSet<Tachievement> Tachievements { get; set; }
         public DbSet<TuserAchievement> TuserAchievements { get; set; }
