@@ -42,6 +42,7 @@ namespace HabitHero.Api.Controllers
                     h => h.IntHabitId,
                     (o, h) => new
                     {
+                        o.IntHabitOccurrenceId,
                         h.IntHabitId,
                         h.StrHabit,
                         h.StrDescription,
@@ -110,6 +111,7 @@ namespace HabitHero.Api.Controllers
                       s => s.IntStatusId,
                       (oh, s) => new
                       {
+                          oh.o.IntHabitOccurrenceId,
                           oh.h.IntHabitId,
                           oh.h.StrHabit,
                           oh.h.StrDescription,
@@ -169,6 +171,7 @@ namespace HabitHero.Api.Controllers
                           s => s.IntStatusId,
                           (oh, s) => new
                           {
+                              oh.o.IntHabitOccurrenceId,
                               oh.h.IntHabitId,
                               oh.h.StrHabit,
                               oh.h.StrDescription,
