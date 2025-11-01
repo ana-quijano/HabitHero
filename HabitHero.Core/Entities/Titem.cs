@@ -10,7 +10,7 @@ namespace HabitHero.Core.Entities
     {
         public int IntItemId { get; set; }
         public string StrItem { get; set; } = null!;
-        public string StrSlug { get; set; }
+        public string StrSlug { get; set; } = null!;
         public int IntPrice { get; set; }
         public int IntItemTypeId { get; set; }
         public int IntItemTierId { get; set; }
@@ -18,7 +18,6 @@ namespace HabitHero.Core.Entities
         // Nav Props
         public TitemType? TitemType { get; set; }
         public TitemTier? TitemTier { get; set; }
-        public ICollection<TavatarItem> TavatarItems { get; set; } = new List<TavatarItem>(); 
-
+        public ICollection<TavatarItem> TavatarItems { get; set; } = new List<TavatarItem>();
     }
 }

@@ -13,7 +13,6 @@ namespace HabitHero.Core.Entities
 
         // Nav Props
         public ICollection<Tuser> Tusers { get; set; } = new List<Tuser>();
-        public ICollection<TavatarItem> TavatarItems { get; set; } = new List<TavatarItem>(); // 👈 Add this
-
+        public ICollection<TavatarItem> TavatarItems { get; set; } = new List<TavatarItem>();
     }
 }
