@@ -5,10 +5,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace HabitHero.Api.Controllers
 {
-    public class AvatarConroller : Controller
+    public class AvatarController : Controller
     {
         private readonly HabitHeroDbContext _db;
-        public AvatarConroller(HabitHeroDbContext db) => _db = db;
+        public AvatarController(HabitHeroDbContext db) => _db = db;
 
         /// <summary>
         /// GET: User Inventory
@@ -19,49 +19,38 @@ namespace HabitHero.Api.Controllers
         public async Task<IActionResult> GetInventory([FromRoute] int userId)
         {
             // 1. Check if user exists
-            var userExists = await _db.Tusers
+            var user = await _db.Tusers
                 .AsNoTracking()
-                .AnyAsync(u => u.IntUserId == userId);
+                .FirstOrDefaultAsync(u => u.IntUserId == userId);
 
-            if (!userExists)
+            if (user == null)
                 return NotFound(new { message = "User not found." });
 
-            // 2️. Join TUsers → TAvatars → TAvatarItems → TItems
-            var items = await _db.Tusers
+            if (user.IntAvatarId == null)
+                return NotFound(new { message = "User does not have an avatar assigned." });
+
+            var avatarId = user.IntAvatarId.Value;
+
+            // 2. Join Items + AvatarItems (to get quantity) filtered by avatarId
+            var items = await _db.TavatarItems
                 .AsNoTracking()
-                .Where(u => u.IntUserId == userId)
-                .Join(_db.Tavatars,
-                    user => user.IntAvatarId,
-                    avatar => avatar.IntAvatarId,
-                    (user, avatar) => new { user, avatar })
-                .Join(_db.TavatarItems,
-                    ua => ua.avatar.IntAvatarId,
-                    avatarItem => avatarItem.IntAvatarId,
-                    (ua, avatarItem) => new { ua.user, ua.avatar, avatarItem })
+                .Where(ai => ai.IntAvatarId == avatarId)
                 .Join(_db.Titems,
-                    uaai => uaai.avatarItem.IntItemId,
+                    ai => ai.IntItemId,
                     item => item.IntItemId,
-                    (uaai, item) => new
+                    (ai, item) => new
                     {
                         id = item.IntItemId,
                         name = item.StrItem,
-                        slug = !string.IsNullOrWhiteSpace(item.StrSlug)
-                            ? item.StrSlug
-                            : item.StrItem
-                                .Trim()
-                                .ToLower()
-                                .Replace(" ", "_")
-                                .Replace("-", "_"),
-                        quantity = uaai.avatarItem.IntQuantity
+                        slug = item.StrSlug,
+                        quantity = ai.IntQuantity
                     })
                 .ToListAsync();
 
-            // 3. Return results in desired structure
-            return Ok(new
-            {
-                items
-            });
+            // 3. Return JSON
+            return Ok(new { items });
         }
+
         [HttpGet("api/avatar/updateInventory/{userId}/{itemSlug}")]
         public async Task<IActionResult> UpdateInventory([FromRoute] int userId, [FromRoute] string itemSlug)
         {
