@@ -9,7 +9,10 @@ namespace HabitHero.Core.Entities
     public class Tavatar
     {
         public int IntAvatarId { get; set; }
-        public string StrAvatar { get; set; } = null!;
+        public string StrImageName {  get; set; } 
+        public string StrAvatarName { get; set; }
+        public int IntHappiness {  get; set; }
+        public int IntHealth { get; set; }
 
         // Nav Props
         public ICollection<Tuser> Tusers { get; set; } = new List<Tuser>();
