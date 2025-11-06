@@ -13,7 +13,8 @@ namespace HabitHero.Core.Entities
         public string StrUsername { get; set; } = null!;   
         public string StrEmail { get; set; } = null!;      
         public string StrPassword { get; set; } = null!;
-        public decimal DecPoints { get; set; }             
+        public int IntPoints { get; set; }             
+        public int IntTotalPoints { get; set; }
         public decimal MonCash { get; set; }               
         public int? IntAppRestrictionId { get; set; }        
         public int? IntAvatarId { get; set; }

@@ -25,7 +25,7 @@ namespace HabitHero.Infrastructure.Data
         public DbSet<TitemTier> TitemTiers { get; set; }
         public DbSet<TitemType> TitemTypes { get; set; }
         public DbSet<TappRestriction> TappRestrictions { get; set; }
-
+        public DbSet<TavatarItem> TavatarItems { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             // ---------------- TUsers ----------------
@@ -51,10 +51,14 @@ namespace HabitHero.Infrastructure.Data
                       .IsRequired()
                       .HasColumnType("varchar(255)")
                       .HasMaxLength(255);
-                entity.Property(e => e.DecPoints)
-                      .HasColumnName("decPoints")
-                      .HasColumnType("decimal(10,2)")
-                      .HasDefaultValue(0m);
+                entity.Property(e => e.IntPoints)
+                      .HasColumnName("intPoints")
+                      .HasColumnType("Integer")
+                      .HasDefaultValue(0);
+                entity.Property(e => e.IntTotalPoints)
+                      .HasColumnName("intTotalPoints")
+                      .HasColumnType("Integer")
+                      .HasDefaultValue(0);
                 entity.Property(e => e.MonCash)
                       .HasColumnName("monCash")
                       .HasColumnType("money")
@@ -110,11 +114,24 @@ namespace HabitHero.Infrastructure.Data
                 entity.Property(e => e.IntAvatarId)
                       .HasColumnName("intAvatarID")
                       .UseIdentityColumn();
-                entity.Property(e => e.StrAvatar)
-                      .HasColumnName("strAvatar")
+                entity.Property(e => e.StrImageName)
+                      .HasColumnName("strImageName")
                       .IsRequired()
                       .HasColumnType("varchar(255)")
                       .HasMaxLength(255);
+                entity.Property(e => e.StrAvatarName)
+                      .HasColumnName("strAvatarName")
+                      .IsRequired()
+                      .HasColumnType("varchar(255)")
+                      .HasMaxLength(255);
+                entity.Property(e => e.IntHappiness)
+                      .HasColumnName("intHappiness")
+                      .HasColumnType("Integer")
+                      .HasDefaultValue(100);
+                entity.Property(e => e.IntHealth)
+                      .HasColumnName("intHealth")
+                      .HasColumnType("Integer")
+                      .HasDefaultValue(100);
 
                 entity.HasMany(a => a.Tusers)
                      .WithOne(u => u.Tavatar)
@@ -306,8 +323,8 @@ namespace HabitHero.Infrastructure.Data
                       .HasColumnName("intQuestHabitID");
                 entity.Property(e => e.IntStatusId)
                       .HasColumnName("intStatusID");
-                entity.Property(e => e.DtmCompleted)
-                      .HasColumnName("dtmCompleted")
+                entity.Property(e => e.DtmDate)
+                      .HasColumnName("dtmDate")
                       .HasColumnType("datetime");
 
                 // FK: HabitOccurrences -> Habits
@@ -516,8 +533,15 @@ namespace HabitHero.Infrastructure.Data
                 entity.Property(e => e.StrItem)
                       .HasColumnName("strItem")
                       .IsRequired()
-                      .HasColumnType("varchar(100)")
+                      .HasColumnType("VARCHAR(100)")
                       .HasMaxLength(100);
+                entity.Property(e => e.StrSlug)
+                      .HasColumnName("strSlug")
+                      .HasColumnType("VARCHAR(255)")
+                      .HasMaxLength(100);
+                entity.Property(e => e.IntPrice)
+                      .HasColumnName("intPrice")
+                      .HasColumnType("INTEGER");
                 entity.Property(e => e.IntItemTypeId)
                       .HasColumnName("intItemTypeID");
                 entity.Property(e => e.IntItemTierId)
@@ -536,6 +560,38 @@ namespace HabitHero.Infrastructure.Data
                       .HasForeignKey(i => i.IntItemTierId)
                       .HasConstraintName("TItems_TItemTiers_FK")
                       .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // ---------------- TAvatarItems ----------------
+            modelBuilder.Entity<TavatarItem>(entity =>
+            {
+                entity.ToTable("TAvatarItems");
+                entity.HasKey(e => e.IntAvatarItemId)
+                      .HasName("TAvatarItems_PK");
+                entity.Property(e => e.IntAvatarItemId)
+                      .HasColumnName("intAvatarItemID")
+                      .UseIdentityColumn();
+                entity.Property(e => e.IntAvatarId)
+                      .HasColumnName("intAvatarID")
+                      .IsRequired();
+                entity.Property(e => e.IntItemId)
+                      .HasColumnName("intItemID")
+                      .IsRequired();
+                entity.Property(e => e.IntQuantity)
+                      .HasColumnName("intQuantity")
+                      .IsRequired();
+
+                entity.HasOne(e => e.Tavatar)
+                      .WithMany(a => a.TavatarItems) 
+                      .HasForeignKey(e => e.IntAvatarId)
+                      .HasConstraintName("TAvatarItems_TAvatars_FK")
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(e => e.Titem) 
+                      .WithMany(i => i.TavatarItems) 
+                      .HasForeignKey(e => e.IntItemId)
+                      .HasConstraintName("TAvatarItems_TItems_FK")
+                      .OnDelete(DeleteBehavior.Cascade);
             });
         }
 

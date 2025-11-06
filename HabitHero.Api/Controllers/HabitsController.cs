@@ -1,4 +1,5 @@
 ﻿using HabitHero.Core.Entities;
+using HabitHero.Core.Models.Auth;
 using HabitHero.Infrastructure.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -11,79 +12,247 @@ namespace HabitHero.Api.Controllers
         public HabitsController(HabitHeroDbContext db) => _db = db;
 
         /// <summary>
-        /// GET: User Habits
+        /// GET: User's Habit Occurrences for Today
         /// </summary>
         /// <param name="userId"></param>
         /// <returns></returns>
-        [HttpGet("api/menu/{userId}")] 
+        [HttpGet("api/menu/{userId}")]
         public async Task<IActionResult> GetHabits([FromRoute] int userId)
         {
-            var userExists = await _db.Tusers
-                .AsNoTracking()
-                .AnyAsync(u => u.IntUserId == userId);
+            var user = await _db.Tusers.AsNoTracking()
+                .FirstOrDefaultAsync(u => u.IntUserId == userId);
+            if (user == null) return NotFound(new { message = "User not found." });
 
-            if (!userExists)
-                return NotFound(new { message = "User not found." });
+            var today = DateTime.Today;
 
-            var habits = await _db.Thabits
+            var habitsToday = await _db.ThabitOccurrences
                 .AsNoTracking()
-                .Where(h => h.IntUserId == userId)
-                .Select(h => new
+                .Where(o => o.DtmDate >= today && o.DtmDate < today.AddDays(1)
+                            && _db.Thabits.Any(h => h.IntHabitId == o.IntHabitId && h.IntUserId == userId))
+                .Join(_db.Thabits, o => o.IntHabitId, h => h.IntHabitId, (o, h) => new { o, h })
+                .Join(_db.Tstatuses, oh => oh.o.IntStatusId, s => s.IntStatusId, (oh, s) => new
                 {
-                    h.IntHabitId,
-                    h.StrHabit,      
-                    h.StrDescription
+                    oh.o.IntHabitOccurrenceId,   
+                    oh.h.IntHabitId,
+                    oh.h.StrHabit,
+                    oh.h.StrDescription,
+                    oh.o.DtmDate,
+                    StrStatus = s.StrStatus      
                 })
                 .ToListAsync();
 
             return Ok(new
             {
                 userId,
-                habits
+                points = user.IntPoints,   
+                habits = habitsToday
             });
         }
 
-        /// <summary>
-        /// POST: CREATE NEW HABIT
-        /// </summary>
-        /// <param name="userId"></param>
-        /// <param name="strHabit"></param>
-        /// <param name="strDescription"></param>
-        /// <returns>Updated list of habits</returns>
-        [HttpPost("api/habits/{userId}/{strHabit}/{strDescription}")]
-        public async Task<IActionResult> CreateHabit([FromRoute] int userId, [FromRoute] string strHabit, [FromRoute] string strDescription)
+        ///// <summary>
+        ///// POST: CREATE NEW HABIT
+        ///// Creates new THabit and THabitOccurence for current date
+        ///// </summary>
+        ///// <returns>Updated list of current date habit occurences</returns>
+        [HttpPost("api/habits/add")]
+        public async Task<IActionResult> AddHabit([FromBody] AddHabitRequest request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
             var userExists = await _db.Tusers
                 .AsNoTracking()
-                .AnyAsync(u => u.IntUserId == userId);
+                .AnyAsync(u => u.IntUserId == request.IntUserId);
+            if (!userExists) return NotFound(new { message = "User not found." });
 
-            if (!userExists)
-                return NotFound(new { message = "User not found." });
-
+            // Create the habit on THabits
             var newHabit = new Thabit
             {
-                IntUserId = userId,
-                StrHabit = strHabit,
-                StrDescription = strDescription
+                IntUserId = request.IntUserId,
+                StrHabit = request.StrHabit.Trim(),
+                StrDescription = request.StrDescription.Trim(),
             };
-
             _db.Thabits.Add(newHabit);
             await _db.SaveChangesAsync();
 
-            var updatedHabits = await _db.Thabits
+            // Create habit occurence of new habit with today's date
+            var today = DateTime.Today;
+            var occurrence = new ThabitOccurrence
+            {
+                IntHabitId = newHabit.IntHabitId,
+                DtmDate = today,
+                IntStatusId = 1 // To Do
+            };
+            _db.ThabitOccurrences.Add(occurrence);
+            await _db.SaveChangesAsync();
+
+            // Get and return habit occurences for today
+            var start = today;
+            var end = today.AddDays(1);
+
+            var todaysHabits = await _db.ThabitOccurrences
                 .AsNoTracking()
-                .Where(h => h.IntUserId == userId)
-                .Select(h => new
-                {
-                    h.IntHabitId,
-                    h.StrHabit,
-                    h.StrDescription
-                })
+                .Where(o => o.DtmDate >= start && o.DtmDate < end
+                            && _db.Thabits.Any(h => h.IntHabitId == o.IntHabitId && h.IntUserId == request.IntUserId))
+                .Join(_db.Thabits,
+                      o => o.IntHabitId,
+                      h => h.IntHabitId,
+                      (o, h) => new { o, h })
+                .Join(_db.Tstatuses,
+                      oh => oh.o.IntStatusId,
+                      s => s.IntStatusId,
+                      (oh, s) => new
+                      {
+                          oh.o.IntHabitOccurrenceId,
+                          oh.h.IntHabitId,
+                          oh.h.StrHabit,
+                          oh.h.StrDescription,
+                          oh.o.DtmDate,
+                          s.StrStatus
+                      })
                 .ToListAsync();
 
-            return Ok(updatedHabits);
+            return Ok(todaysHabits);
+        }
+
+        [HttpPost("api/habits/delete")]
+        public async Task<IActionResult> DeleteHabit([FromBody] DeleteHabitRequest request)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            var userExists = await _db.Tusers
+                .AsNoTracking()
+                .AnyAsync(u => u.IntUserId == request.IntUserId);
+            if (!userExists) return NotFound(new { message = "User not found." });
+
+            var habit = await _db.Thabits
+                .FirstOrDefaultAsync(h => h.IntHabitId == request.IntHabitId && h.IntUserId == request.IntUserId);
+
+            if (habit == null) return NotFound(new { message = "Habit not found for this user." });
+
+            using var tx = await _db.Database.BeginTransactionAsync();
+
+            try
+            {
+                // Delete all occurrences for this habit
+                await _db.ThabitOccurrences
+                    .Where(o => o.IntHabitId == request.IntHabitId)
+                    .ExecuteDeleteAsync();
+
+                // Delete the habit
+                _db.Thabits.Remove(habit);
+
+                await _db.SaveChangesAsync();
+                await tx.CommitAsync();
+
+                // Get and return today's occurrences
+                var today = DateTime.Today;
+                var start = today;
+                var end = today.AddDays(1);
+
+                var todaysHabits = await _db.ThabitOccurrences
+                    .AsNoTracking()
+                    .Where(o => o.DtmDate >= start && o.DtmDate < end
+                                && _db.Thabits.Any(h => h.IntHabitId == o.IntHabitId && h.IntUserId == request.IntUserId))
+                    .Join(_db.Thabits,
+                          o => o.IntHabitId,
+                          h => h.IntHabitId,
+                          (o, h) => new { o, h })
+                    .Join(_db.Tstatuses,
+                          oh => oh.o.IntStatusId,
+                          s => s.IntStatusId,
+                          (oh, s) => new
+                          {
+                              oh.o.IntHabitOccurrenceId,
+                              oh.h.IntHabitId,
+                              oh.h.StrHabit,
+                              oh.h.StrDescription,
+                              oh.o.DtmDate,
+                              s.StrStatus
+                          })
+                    .ToListAsync();
+
+                return Ok(todaysHabits);
+            }
+            catch
+            {
+                await tx.RollbackAsync();
+                throw; 
+            }
+        }
+
+        [HttpPost("api/habits/updateoccurence")]
+        public async Task<IActionResult> MarkHabitOccurrence([FromBody] UpdateOccurrenceStatusRequest request)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            // Validate user
+            var user = await _db.Tusers.FirstOrDefaultAsync(u => u.IntUserId == request.IntUserId);
+            if (user == null) return NotFound(new { message = "User not found." });
+
+            // Validate habit belongs to user
+            var habit = await _db.Thabits
+                .FirstOrDefaultAsync(h => h.IntHabitId == request.IntHabitId && h.IntUserId == request.IntUserId);
+            if (habit == null) return NotFound(new { message = "Habit not found for this user." });
+
+            // Find the occurrence to update
+            var occurrence = await _db.ThabitOccurrences
+                .FirstOrDefaultAsync(o => o.IntHabitOccurrenceId == request.IntHabitOccurrenceId &&
+                                          o.IntHabitId == request.IntHabitId);
+            if (occurrence == null)
+                return NotFound(new { message = "Habit occurrence not found." });
+
+            using var tx = await _db.Database.BeginTransactionAsync();
+
+            try
+            {
+                // Track the previous status
+                var prevStatus = occurrence.IntStatusId;
+
+                // Update status
+                occurrence.IntStatusId = request.IntStatusId;
+
+                // Award points only when transitioning from not Done → Done
+                if (prevStatus != 2 && request.IntStatusId == 2)
+                {
+                    user.IntPoints += 10;
+                }
+
+                await _db.SaveChangesAsync();
+
+                // Get today's updated list
+                var today = DateTime.Today;
+                var start = today;
+                var end = today.AddDays(1);
+
+                var todaysHabits = await _db.ThabitOccurrences
+                    .AsNoTracking()
+                    .Where(o => o.DtmDate >= start && o.DtmDate < end
+                                && _db.Thabits.Any(h => h.IntHabitId == o.IntHabitId && h.IntUserId == request.IntUserId))
+                    .Join(_db.Thabits, o => o.IntHabitId, h => h.IntHabitId, (o, h) => new { o, h })
+                    .Join(_db.Tstatuses, oh => oh.o.IntStatusId, s => s.IntStatusId, (oh, s) => new
+                    {
+                        oh.o.IntHabitOccurrenceId,
+                        oh.h.IntHabitId,
+                        oh.h.StrHabit,
+                        oh.h.StrDescription,
+                        oh.o.DtmDate,
+                        s.StrStatus
+                    })
+                    .ToListAsync();
+
+                await tx.CommitAsync();
+
+                return Ok(new
+                {
+                    habits = todaysHabits,
+                    points = user.IntPoints
+                });
+            }
+            catch
+            {
+                await tx.RollbackAsync();
+                throw;
+            }
         }
     }
 }
