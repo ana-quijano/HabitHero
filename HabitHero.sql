@@ -70,7 +70,10 @@ CREATE TABLE TUsers
 	,strPassword				VARCHAR(255)	NOT NULL
 	,intPoints					INTEGER			NOT NULL DEFAULT 0
 	,intTotalPoints				INTEGER			NOT NULL DEFAULT 0
+<<<<<<< HEAD
 	,monCash					MONEY			NOT NULL DEFAULT 0
+=======
+>>>>>>> d920982fdf5b46f64be80ca141202b29cbaf4948
 	,intAppRestrictionID		INTEGER			NULL
 	,intAvatarID				INTEGER			NULL
 	,CONSTRAINT TUsers_PK	PRIMARY KEY ( intUserID )
@@ -296,6 +299,16 @@ VALUES	 ('Sunday')
 		,('Friday')
 		,('Saturday')
 
+<<<<<<< HEAD
+=======
+--INSERT INTO TAvatars -- SAMPLE ONLY (str entities will hold file names for each avatar)
+--		 (strAvatar)
+--VALUES	 ('bird.png')
+--		,('alien.png')
+--		,('robot.png')
+--		,('fish.png')
+--		,('penguin.png')
+>>>>>>> d920982fdf5b46f64be80ca141202b29cbaf4948
 
 INSERT INTO TUsers
 		 (strUserName, strEmail, strPassword)
@@ -321,6 +334,7 @@ VALUES
      (1, NULL, GETDATE(), 1)	-- Read 10 pages (To Do)
     ,(2, NULL, DATEADD(DAY, 1, GETDATE()), 1)	-- 30-min exercise (To Do)
     ,(3, NULL, GETDATE(), 1)	-- Practice coding (To Do)
+<<<<<<< HEAD
 
 --Select TH.strHabit, TH.strDescription, THO.dtmDate, TS.strStatus
 --From THabits as TH JOIN THabitOccurrences as THO
@@ -328,3 +342,5 @@ VALUES
 --	Join TStatuses as TS
 --	ON TS.intStatusID = THO.intStatusID
 --WHERE TH.intUserID = 1
+=======
+>>>>>>> d920982fdf5b46f64be80ca141202b29cbaf4948

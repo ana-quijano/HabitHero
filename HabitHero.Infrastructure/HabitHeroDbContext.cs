@@ -114,11 +114,24 @@ namespace HabitHero.Infrastructure.Data
                 entity.Property(e => e.IntAvatarId)
                       .HasColumnName("intAvatarID")
                       .UseIdentityColumn();
-                entity.Property(e => e.StrAvatar)
-                      .HasColumnName("strAvatar")
+                entity.Property(e => e.StrImageName)
+                      .HasColumnName("strImageName")
                       .IsRequired()
                       .HasColumnType("varchar(255)")
                       .HasMaxLength(255);
+                entity.Property(e => e.StrAvatarName)
+                      .HasColumnName("strAvatarName")
+                      .IsRequired()
+                      .HasColumnType("varchar(255)")
+                      .HasMaxLength(255);
+                entity.Property(e => e.IntHappiness)
+                      .HasColumnName("intHappiness")
+                      .HasColumnType("Integer")
+                      .HasDefaultValue(100);
+                entity.Property(e => e.IntHealth)
+                      .HasColumnName("intHealth")
+                      .HasColumnType("Integer")
+                      .HasDefaultValue(100);
 
                 entity.HasMany(a => a.Tusers)
                      .WithOne(u => u.Tavatar)
