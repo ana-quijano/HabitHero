@@ -46,7 +46,10 @@ CREATE TABLE TSchedules
 CREATE TABLE TAvatars
 (
 	 intAvatarID				INTEGER			IDENTITY
-	,strAvatar					VARCHAR(255)	NOT NULL
+	,strImageName				VARCHAR(255)	NOT NULL
+	,strAvatarName				VARCHAR(255)	NOT NULL
+	,intHappiness				INTEGER			NOT NULL DEFAULT 100
+	,intHealth					INTEGER			NOT NULL DEFAULT 100
 	,CONSTRAINT TAvatars_PK PRIMARY KEY (intAvatarID)
 )
 
@@ -65,7 +68,8 @@ CREATE TABLE TUsers
 	,strUserName				VARCHAR(100)	NOT NULL
 	,strEmail					VARCHAR(255)	NOT NULL
 	,strPassword				VARCHAR(255)	NOT NULL
-	,decPoints					DECIMAL(10,2)	NOT NULL DEFAULT 0
+	,intPoints					INTEGER			NOT NULL DEFAULT 0
+	,intTotalPoints				INTEGER			NOT NULL DEFAULT 0
 	,monCash					MONEY			NOT NULL DEFAULT 0
 	,intAppRestrictionID		INTEGER			NULL
 	,intAvatarID				INTEGER			NULL
@@ -114,10 +118,10 @@ CREATE TABLE TStatuses
 CREATE TABLE THabitOccurrences
 (
      intHabitOccurrenceID  INTEGER      IDENTITY
-    ,intHabitID				INTEGER      NOT NULL
-	,intQuestHabitID	   INTEGER      NOT NULL
-    ,dtmCompleted          DATETIME     NULL        
-    ,intStatusID           INTEGER      NOT NULL    
+    ,intHabitID				INTEGER     NULL
+	,intQuestHabitID	   INTEGER      NULL
+    ,dtmDate	          DATETIME		NULL 
+    ,intStatusID           INTEGER      NOT NULL DEFAULT 1
     ,CONSTRAINT THabitOccurrences_PK PRIMARY KEY (intHabitOccurrenceID)
 );
 
@@ -292,18 +296,11 @@ VALUES	 ('Sunday')
 		,('Friday')
 		,('Saturday')
 
-INSERT INTO TAvatars -- SAMPLE ONLY (str entities will hold file names for each avatar)
-		 (strAvatar)
-VALUES	 ('bird.png')
-		,('alien.png')
-		,('robot.png')
-		,('fish.png')
-		,('penguin.png')
 
 INSERT INTO TUsers
-		 (strUserName, strEmail, strPassword, decPoints, monCash, intAvatarID)
-VALUES	 ('Hero123', 'hero123@heromail.com', 'Hero123', 0, 0, 1)
-		,('PlayerABC', 'playerabc@playermail.com', 'PlayerABC', 0, 0, 2)
+		 (strUserName, strEmail, strPassword)
+VALUES	 ('Hero123', 'hero123@heromail.com', 'Hero123')
+		,('PlayerABC', 'playerabc@playermail.com', 'PlayerABC')
 
 INSERT INTO THabits 
 		  (intUserID, intScheduleID, strHabit, strDescription, dtmStartDate, dtmEndDate, dtmReminderTime)
@@ -312,7 +309,22 @@ VALUES
 		 ,(1, 4, '30-min exercise', 'Light workout / walk', '2025-10-03', NULL, '18:00')      
 		 ,(2, 6, 'Practice coding', 'Leetcode / project work', '2025-10-05', NULL, '20:00')   
 
+INSERT INTO TStatuses
+		 (strStatus)
+VALUES	 ('To Do')
+		,('Done')
+		,('Missed')
 
+INSERT INTO THabitOccurrences
+    (intHabitID, intQuestHabitID, dtmDate, intStatusID)
+VALUES
+     (1, NULL, GETDATE(), 1)	-- Read 10 pages (To Do)
+    ,(2, NULL, DATEADD(DAY, 1, GETDATE()), 1)	-- 30-min exercise (To Do)
+    ,(3, NULL, GETDATE(), 1)	-- Practice coding (To Do)
 
-
-
+--Select TH.strHabit, TH.strDescription, THO.dtmDate, TS.strStatus
+--From THabits as TH JOIN THabitOccurrences as THO
+--	ON TH.intHabitID = THO.intHabitID
+--	Join TStatuses as TS
+--	ON TS.intStatusID = THO.intStatusID
+--WHERE TH.intUserID = 1
