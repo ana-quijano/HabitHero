@@ -110,8 +110,5 @@ namespace HabitHero.Api.Controllers
             return Ok(new { items = inventory });
         }
 
-
-
-
     }
 }
