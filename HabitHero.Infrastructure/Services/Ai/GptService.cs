@@ -33,7 +33,7 @@ namespace HabitHero.Infrastructure.Services.Ai
                 "Avoid overcomplex or vague habits. Maintain a straight-to-the-point, simple, and encouraging tone. Mirror the user’s locale and measurement units in outputs." +
                 "Return STRICT JSON with this schema: " +
                 "{ \"Parsed_Goal\": string, \"Habits\": [ { \"StrHabit\": string, \"StrDescription\": string } ] }. " +
-                "Use 5-8 habits, 1-2 short sentences per description (not more than 255 characters)";
+                "Use 3-4 habits, 1-2 short sentences per description (not more than 100 characters)";
 
             var body = new
             {

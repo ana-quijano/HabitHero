@@ -266,7 +266,7 @@ namespace HabitHero.Api.Controllers
             }
         }
 
-        [HttpPost("api/habits/generate-ai")]
+        [HttpPost("api/habits/generateaihabits")]
         public async Task<IActionResult> GenerateAIHabits([FromBody] GenerateAIHabitsRequest request, CancellationToken ct)
         {
             if (request == null || string.IsNullOrWhiteSpace(request.StrGoal))
