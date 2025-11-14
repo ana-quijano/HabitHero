@@ -70,10 +70,7 @@ CREATE TABLE TUsers
 	,strPassword				VARCHAR(255)	NOT NULL
 	,intPoints					INTEGER			NOT NULL DEFAULT 0
 	,intTotalPoints				INTEGER			NOT NULL DEFAULT 0
-<<<<<<< HEAD
 	,monCash					MONEY			NOT NULL DEFAULT 0
-=======
->>>>>>> d920982fdf5b46f64be80ca141202b29cbaf4948
 	,intAppRestrictionID		INTEGER			NULL
 	,intAvatarID				INTEGER			NULL
 	,CONSTRAINT TUsers_PK	PRIMARY KEY ( intUserID )

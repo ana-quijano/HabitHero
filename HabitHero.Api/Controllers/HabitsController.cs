@@ -1,16 +1,22 @@
 ﻿using HabitHero.Core.Entities;
+using HabitHero.Core.Models.Ai;
 using HabitHero.Core.Models.Auth;
 using HabitHero.Infrastructure.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using HabitHero.Core.Services.Ai;
 
 namespace HabitHero.Api.Controllers
 {
     public class HabitsController : Controller
     {
         private readonly HabitHeroDbContext _db;
-        public HabitsController(HabitHeroDbContext db) => _db = db;
-
+        private readonly IGptService _gpt;
+        public HabitsController(HabitHeroDbContext db, IGptService gpt)
+        {
+            _db = db;
+            _gpt = gpt;
+        }
         /// <summary>
         /// GET: User's Habit Occurrences for Today
         /// </summary>
@@ -114,6 +120,11 @@ namespace HabitHero.Api.Controllers
             return Ok(todaysHabits);
         }
 
+        /// <summary>
+        /// Deletes habit and all corresponding habit occurences
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
         [HttpPost("api/habits/delete")]
         public async Task<IActionResult> DeleteHabit([FromBody] DeleteHabitRequest request)
         {
@@ -253,6 +264,17 @@ namespace HabitHero.Api.Controllers
                 await tx.RollbackAsync();
                 throw;
             }
+        }
+
+        [HttpPost("api/habits/generate-ai")]
+        public async Task<IActionResult> GenerateAIHabits([FromBody] GenerateAIHabitsRequest request, CancellationToken ct)
+        {
+            if (request == null || string.IsNullOrWhiteSpace(request.StrGoal))
+                return BadRequest(new { message = "Goal is required." });
+
+            var payload = await _gpt.GenerateHabitsAsync(request.StrGoal.Trim(), ct);
+
+            return Ok(payload);
         }
     }
 }
