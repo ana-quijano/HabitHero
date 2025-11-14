@@ -36,6 +36,8 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddHttpClient<IGptService, GptService>();
+builder.Services.AddScoped<IGptService, GptService>();
+
 
 var app = builder.Build();
 
