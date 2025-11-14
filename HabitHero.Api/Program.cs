@@ -1,7 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
-using HabitHero.Infrastructure.Data;
+﻿using HabitHero.Infrastructure.Data;
 using Microsoft.Data.SqlClient; 
-
+using Microsoft.EntityFrameworkCore;
+using HabitHero.Core.Services.Ai;
+using HabitHero.Infrastructure.Services.Ai;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -34,6 +35,7 @@ Console.WriteLine($"[DB CHECK] Using '{local}' → Server={csb.DataSource}; Data
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddHttpClient<IGptService, GptService>();
 
 var app = builder.Build();
 
