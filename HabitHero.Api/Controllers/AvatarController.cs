@@ -52,54 +52,67 @@ namespace HabitHero.Api.Controllers
         }
 
         [HttpGet("api/avatar/updateInventory/{userId}/{itemSlug}")]
-        public async Task<IActionResult> UpdateInventory([FromRoute] int userId, [FromRoute] string itemSlug)
+        public async Task<IActionResult> UpdateInventory(int userId, string itemSlug)
         {
-            // 1. Verify user exists and get their avatar ID
+            // 1. Validate user
             var user = await _db.Tusers
-                .AsNoTracking()
+                .Include(u => u.Tavatar)
                 .FirstOrDefaultAsync(u => u.IntUserId == userId);
 
             if (user == null)
-                return NotFound(new { message = $"User with ID {userId} not found." });
+                return NotFound(new { message = $"User {userId} not found." });
 
             if (user.IntAvatarId == null)
-                return NotFound(new { message = "User does not have an assigned avatar." });
+                return BadRequest(new { message = "User has no avatar." });
 
-            var avatarId = user.IntAvatarId.Value;
+            var avatar = user.Tavatar;
 
-            // 2. Get the item by slug
+            // 2. Find item by slug
             var item = await _db.Titems
-                .AsNoTracking()
                 .FirstOrDefaultAsync(i => i.StrSlug == itemSlug);
 
             if (item == null)
-                return NotFound(new { message = $"Item with slug '{itemSlug}' not found." });
+                return NotFound(new { message = $"Item '{itemSlug}' not found." });
 
-            // 3. Get the avatar's inventory entry
+            // 3. Find avatar's item entry
             var avatarItem = await _db.TavatarItems
-                .FirstOrDefaultAsync(ai => ai.IntAvatarId == avatarId && ai.IntItemId == item.IntItemId);
+                .FirstOrDefaultAsync(ai => ai.IntAvatarId == avatar.IntAvatarId &&
+                                           ai.IntItemId == item.IntItemId);
 
             if (avatarItem == null)
-                return NotFound(new { message = $"No '{itemSlug}' found in avatar inventory." });
+                return NotFound(new { message = $"Avatar does not have '{itemSlug}'." });
 
-            // 4. Remove one quantity, or delete the row if it reaches zero
+            // 4. Remove 1 quantity
             avatarItem.IntQuantity -= 1;
-
             if (avatarItem.IntQuantity <= 0)
                 _db.TavatarItems.Remove(avatarItem);
             else
                 _db.TavatarItems.Update(avatarItem);
 
+            // 5. ⭐ Update avatar health
+            //    Item cost = direct health gain
+            avatar.IntHealth += item.IntPrice;
+            avatar.IntHealth = Math.Min(100, avatar.IntHealth); // cap at 100
+
+            // 6. ⭐ Update happiness
+            //    Increase happiness if health > 50
+            if (avatar.IntHealth > 50)
+            {
+                avatar.IntHappiness += 2;  // adjust this amount however you want
+                avatar.IntHappiness = Math.Min(100, avatar.IntHappiness);
+            }
+
+            _db.Tavatars.Update(avatar);
+
             await _db.SaveChangesAsync();
 
-            // 5. Return updated inventory for this avatar
+            // 7. Return inventory + updated stats
             var inventory = await _db.TavatarItems
-                .Where(ai => ai.IntAvatarId == avatarId)
+                .Where(ai => ai.IntAvatarId == avatar.IntAvatarId)
                 .Join(_db.Titems,
                     ai => ai.IntItemId,
                     i => i.IntItemId,
-                    (ai, i) => new
-                    {
+                    (ai, i) => new {
                         id = i.IntItemId,
                         name = i.StrItem,
                         slug = i.StrSlug,
@@ -107,8 +120,14 @@ namespace HabitHero.Api.Controllers
                     })
                 .ToListAsync();
 
-            return Ok(new { items = inventory });
+            return Ok(new
+            {
+                items = inventory,
+                health = avatar.IntHealth,
+                happiness = avatar.IntHappiness
+            });
         }
+
 
     }
 }
