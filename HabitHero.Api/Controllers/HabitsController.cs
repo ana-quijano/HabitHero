@@ -266,6 +266,12 @@ namespace HabitHero.Api.Controllers
             }
         }
 
+        /// <summary>
+        /// POST: 
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="ct"></param>
+        /// <returns></returns>
         [HttpPost("api/habits/generateaihabits")]
         public async Task<IActionResult> GenerateAIHabits([FromBody] GenerateAIHabitsRequest request, CancellationToken ct)
         {
@@ -275,6 +281,79 @@ namespace HabitHero.Api.Controllers
             var payload = await _gpt.GenerateHabitsAsync(request.StrGoal.Trim(), ct);
 
             return Ok(payload);
+        }
+
+        /// <summary>
+        /// POST: Add multiple AI-generated habits for a user
+        /// </summary>
+        /// <returns> List of updated habit occurences</returns>
+        [HttpPost("api/habits/addaihabits")]
+        public async Task<IActionResult> AddAiHabits([FromBody] AddAIHabitsRequest request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var userExists = await _db.Tusers
+                .AsNoTracking()
+                .AnyAsync(u => u.IntUserId == request.IntUserId);
+
+            if (!userExists)
+                return NotFound(new { message = "User not found." });
+
+            if (request.Habits == null || !request.Habits.Any())
+                return BadRequest(new { message = "No habits to add." });
+
+            // Insert habits into THabits
+            var newHabits = request.Habits.Select(h => new Thabit
+            {
+                IntUserId = request.IntUserId,
+                StrHabit = h.StrHabit,
+                StrDescription = h.StrDescription,
+            }).ToList();
+
+            _db.Thabits.AddRange(newHabits);
+            await _db.SaveChangesAsync();   
+
+            // For each new habit, create a THabitOccurrence row for today
+            var today = DateTime.Today;
+
+            var newOccurrences = newHabits.Select(h => new ThabitOccurrence
+            {
+                IntHabitId = h.IntHabitId,
+                DtmDate = today,         
+                IntStatusId = 1
+            }).ToList();
+
+            _db.ThabitOccurrences.AddRange(newOccurrences);
+            await _db.SaveChangesAsync();
+
+            // Get and return habit occurences for today
+            var start = today;
+            var end = today.AddDays(1);
+
+            var todaysHabits = await _db.ThabitOccurrences
+                .AsNoTracking()
+                .Where(o => o.DtmDate >= start && o.DtmDate < end
+                            && _db.Thabits.Any(h => h.IntHabitId == o.IntHabitId && h.IntUserId == request.IntUserId))
+                .Join(_db.Thabits,
+                      o => o.IntHabitId,
+                      h => h.IntHabitId,
+                      (o, h) => new { o, h })
+                .Join(_db.Tstatuses,
+                      oh => oh.o.IntStatusId,
+                      s => s.IntStatusId,
+                      (oh, s) => new
+                      {
+                          oh.o.IntHabitOccurrenceId,
+                          oh.h.IntHabitId,
+                          oh.h.StrHabit,
+                          oh.h.StrDescription,
+                          oh.o.DtmDate,
+                          s.StrStatus
+                      })
+                .ToListAsync();
+
+            return Ok(todaysHabits);
         }
     }
 }

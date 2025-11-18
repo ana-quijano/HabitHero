@@ -296,17 +296,6 @@ VALUES	 ('Sunday')
 		,('Friday')
 		,('Saturday')
 
-<<<<<<< HEAD
-=======
---INSERT INTO TAvatars -- SAMPLE ONLY (str entities will hold file names for each avatar)
---		 (strAvatar)
---VALUES	 ('bird.png')
---		,('alien.png')
---		,('robot.png')
---		,('fish.png')
---		,('penguin.png')
->>>>>>> d920982fdf5b46f64be80ca141202b29cbaf4948
-
 INSERT INTO TUsers
 		 (strUserName, strEmail, strPassword)
 VALUES	 ('Hero123', 'hero123@heromail.com', 'Hero123')
