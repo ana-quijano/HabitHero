@@ -8,10 +8,10 @@ using System.Linq;
 namespace HabitHero.Api.Controllers {
 	[ApiController]
 	[Route("api/avatar")]
-	public class AvatarController : ControllerBase {
+	public class AvatarNameController : ControllerBase {
 		private readonly HabitHeroDbContext _db;
 
-		public AvatarController(HabitHeroDbContext db) => _db = db;
+		public AvatarNameController(HabitHeroDbContext db) => _db = db;
 
 		// Pool of names by avatar type/key (these should match what you use on the UI)
 		private static readonly Dictionary<string, string[]> AvatarNamePool =

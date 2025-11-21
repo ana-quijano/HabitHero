@@ -73,11 +73,10 @@ namespace HabitHero.Api.Controllers {
 			var occurrences = await _db.ThabitOccurrences
 				.AsNoTracking()
 				.Where(o => habitIds.Contains(o.IntHabitId)
-							&& o.IntStatusId == completedStatusId
-							&& o.DtmCompleted != null)
+							&& o.IntStatusId == completedStatusId)
 				.Select(o => new {
 					o.IntHabitId,
-					CompletedDate = o.DtmCompleted.Value.Date
+					CompletedDate = o.DtmDate.Value.Date
 				})
 				.ToListAsync();
 

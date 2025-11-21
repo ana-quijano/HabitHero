@@ -25,11 +25,11 @@ namespace HabitHero.Api.Controllers
 
 			var topDescending = await _db.Tusers
 				.AsNoTracking()
-				.OrderByDescending(u => u.DecPoints)   // highest first
+				.OrderByDescending(u => u.IntPoints)   // highest first
 				.ThenBy(u => u.StrUsername)            // stable tie-breaker
 				.Select(u => new {
 					username = u.StrUsername,
-					totalPoints = u.DecPoints
+					totalPoints = u.IntPoints
 				})
 				.Take(10)
 				.ToListAsync();
