@@ -271,6 +271,9 @@ namespace HabitHero.Infrastructure.Data
                       .UseIdentityColumn();
                 entity.Property(e => e.IntUserId).HasColumnName("intUserID");
                 entity.Property(e => e.IntQuestId).HasColumnName("intQuestID");
+                entity.Property(e => e.BlnAccepted)
+                      .HasColumnName("blnAccepted")
+                      .HasDefaultValue(true);
 
                 // FK: UserQuests -> Users
                 entity.HasOne(uq => uq.Tuser)

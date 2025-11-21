@@ -11,6 +11,7 @@ namespace HabitHero.Core.Entities
         public int IntUserQuestId { get; set; }
         public int IntUserId { get; set; }
         public int IntQuestId { get; set; }
+        public bool BlnAccepted { get; set; } = true;
 
         public Tuser? Tuser { get; set; }
         public Tquest? Tquest { get; set; }

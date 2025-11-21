@@ -29,19 +29,22 @@ namespace HabitHero.Api.Controllers
                 return NotFound("User not found.");
             }
 
-            var quests = await _db.TuserQuests
+            var userQuests = await _db.TuserQuests
                 .AsNoTracking()
                 .Where(uq => uq.IntUserId == userId)
                 .Select(uq => uq.Tquest)
                 .ToListAsync();
 
-            return Ok(quests);
+            return Ok(new
+            {
+                quests = userQuests
+            });
         }
 
-        [HttpPost("api/quests/create")]
+        [HttpPost("api/quests/createquest")]
         public async Task<IActionResult> CreateQuest([FromBody] CreateQuestRequest request)
         {
-            if (request.StrQuestName == null)
+            if (string.IsNullOrWhiteSpace(request.StrQuestName))
             {
                 return BadRequest("Quest name is required.");
             }
@@ -52,7 +55,7 @@ namespace HabitHero.Api.Controllers
             }
 
             try
-            { 
+            {
                 // Create new quest
                 var newQuest = new Tquest
                 {
@@ -78,8 +81,61 @@ namespace HabitHero.Api.Controllers
                 return BadRequest();
             }
         }
+
+        [HttpPost("api/quests/adduserquest")]
+        public async Task<IActionResult> InviteUserToQuest([FromBody] InviteUserToQuest request)
+        {
+            if (string.IsNullOrWhiteSpace(request.StrUserName))
+            {
+                return BadRequest("Username is required.");
+            }
+
+            if (request.IntQuestId <= 0)
+            {
+                return BadRequest("Invalid quest ID.");
+            }
+
+            var questExists = await _db.Tquests
+                .AsNoTracking()
+                .AnyAsync(q => q.IntQuestId == request.IntQuestId);
+
+            if (!questExists)
+            {
+                return NotFound("Quest not found.");
+            }
+
+            var user = await _db.Tusers
+                .FirstOrDefaultAsync(u => u.StrUsername == request.StrUserName);
+
+            if (user == null)
+            {
+                return NotFound("User not found.");
+            }
+
+            // Check that user is not already in quest
+            var alreadyInQuest = await _db.TuserQuests
+                .AnyAsync(uq => uq.IntUserId == user.IntUserId && uq.IntQuestId == request.IntQuestId);
+
+            if (alreadyInQuest)
+            {
+                return Conflict("User is already in this quest.");
+            }
+
+            // Create new user quest with false accepted
+            var userQuest = new TuserQuest
+            {
+                IntUserId = user.IntUserId,
+                IntQuestId = request.IntQuestId,
+                BlnAccepted = false
+            };
+
+            _db.TuserQuests.Add(userQuest);
+            await _db.SaveChangesAsync();
+
+            return Ok(new
+            {
+                userQuestId = userQuest.IntUserQuestId
+            });
+        }
     }
-
-    
-
 }
