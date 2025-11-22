@@ -19,7 +19,7 @@ namespace HabitHero.Api.Controllers
             public int UserId { get; set; } // optionally include in request body
             public List<PurchaseItemDto> Items { get; set; } = new();
         }
-        [HttpPost("purchase")]
+        [HttpPost("api/shop/purchase")]
         public async Task<IActionResult> Purchase([FromBody] PurchaseRequest request)
         {
             // 1️⃣ Verify user
