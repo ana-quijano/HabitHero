@@ -109,7 +109,7 @@ namespace HabitHero.Api.Controllers
             [HttpGet("api/shop/getpoints/{userId}")]
             public async Task<IActionResult> GetPoints([FromRoute] int userId)
             {
-                // 1️⃣ Verify user exists
+                // 1️ Verify user exists
                 var user = await _db.Tusers
                     .AsNoTracking()
                     .FirstOrDefaultAsync(u => u.IntUserId == userId);
@@ -117,7 +117,7 @@ namespace HabitHero.Api.Controllers
                 if (user == null)
                     return NotFound(new { message = "User not found." });
 
-                // 2️⃣ Return point total
+                // 2️ Return point total
                 return Ok(new
                 {
                     userId = userId,
