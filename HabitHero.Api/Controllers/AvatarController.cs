@@ -31,7 +31,15 @@ namespace HabitHero.Api.Controllers
 
             var avatarId = user.IntAvatarId.Value;
 
-            // 2. Join Items + AvatarItems (to get quantity) filtered by avatarId
+            // 2. Load avatar details
+            var avatar = await _db.Tavatars
+                .AsNoTracking()
+                .FirstOrDefaultAsync(a => a.IntAvatarId == avatarId);
+
+            if (avatar == null)
+                return NotFound(new { message = "Avatar not found." });
+
+            // 3. Load inventory with item details
             var items = await _db.TavatarItems
                 .AsNoTracking()
                 .Where(ai => ai.IntAvatarId == avatarId)
@@ -47,9 +55,17 @@ namespace HabitHero.Api.Controllers
                     })
                 .ToListAsync();
 
-            // 3. Return JSON
-            return Ok(new { items });
+            // 4. Return combined avatar + inventory data
+            return Ok(new
+            {
+                items,
+                health = avatar.IntHealth,
+                happiness = avatar.IntHappiness,
+                avatarName = avatar.StrAvatarName,
+                imageName = avatar.StrImageName
+            });
         }
+
 
         [HttpGet("api/avatar/updateInventory/{userId}/{itemSlug}")]
         public async Task<IActionResult> UpdateInventory(int userId, string itemSlug)
@@ -127,6 +143,46 @@ namespace HabitHero.Api.Controllers
                 happiness = avatar.IntHappiness
             });
         }
+        public class SetAvatarNameDto
+        {
+            public int UserId { get; set; }
+            public string Name { get; set; }
+        }
+
+        [HttpPost("api/avatar/setname")]
+        public async Task<IActionResult> SetAvatarName([FromBody] SetAvatarNameDto dto)
+        {
+            // 1. Verify the user
+            var user = await _db.Tusers
+                .FirstOrDefaultAsync(u => u.IntUserId == dto.UserId);
+
+            if (user == null)
+                return NotFound(new { message = "User not found." });
+
+            if (user.IntAvatarId == null)
+                return BadRequest(new { message = "User has no avatar." });
+
+            var avatarId = user.IntAvatarId.Value;
+
+            // 2. Get the avatar
+            var avatar = await _db.Tavatars
+                .FirstOrDefaultAsync(a => a.IntAvatarId == avatarId);
+
+            if (avatar == null)
+                return NotFound(new { message = "Avatar not found." });
+
+            // 3. Update name
+            avatar.StrAvatarName = dto.Name;
+            await _db.SaveChangesAsync();
+
+            return Ok(new
+            {
+                success = true,
+                avatarName = dto.Name
+            });
+        }
+
+
 
 
     }
