@@ -4,6 +4,7 @@ using HabitHero.Core.Services.Ai;
 using HabitHero.Infrastructure.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Identity.Client;
 
 namespace HabitHero.Api.Controllers
 {
@@ -17,8 +18,8 @@ namespace HabitHero.Api.Controllers
             _gpt = gpt;
         }
 
-        [HttpGet("api/quests/{userId}")]
-        public async Task<IActionResult> GetQuests([FromRoute] int userId)
+        [HttpGet("api/getuserquests/{userId}")]
+        public async Task<IActionResult> GetUserQuests([FromRoute] int userId)
         {
             var user = await _db.Tusers
                 .AsNoTracking()
@@ -38,6 +39,51 @@ namespace HabitHero.Api.Controllers
             return Ok(new
             {
                 quests = userQuests
+            });
+        }
+
+        [HttpGet("api/getquestdetails/{questId}")]
+        public async Task<IActionResult> GetQuestDetails([FromRoute] int questId)
+        {
+            // Get quest
+            var quest = await _db.Tquests
+                .Where(q => q.IntQuestId == questId)
+                .FirstOrDefaultAsync();
+
+            if (quest == null)
+            {
+                return BadRequest("Quest not found.");
+            }
+
+            // Get users in quest
+            var userQuests = await _db.TuserQuests
+                .Where(uq => uq.IntQuestId == questId)
+                .ToListAsync();
+            var userIds = userQuests
+                .Select(uq => uq.IntUserId)
+                .ToList();
+            var users = await _db.Tusers
+                .Where(u => userIds.Contains(u.IntUserId))
+                .ToListAsync();
+
+            // Get quest habits
+            var questHabits = await _db.TquestHabits
+                .Where(qh => qh.IntQuestId == questId)
+                .ToListAsync();
+
+            return Ok(new
+            {
+                strQuestName = quest.StrQuestName,
+                intPointsPot = (int)quest.DecPointsPot,
+                users = users.Select(u => new {
+                    intUserId = u.IntUserId,
+                    strUsername = u.StrUsername
+                }),
+                habits = questHabits.Select(qh => new
+                {
+                    strHabitName = qh.StrHabitName,
+                    strDescription = qh.StrDescription
+                })
             });
         }
 
@@ -74,12 +120,56 @@ namespace HabitHero.Api.Controllers
                 _db.TuserQuests.Add(newUserQuest);
                 await _db.SaveChangesAsync();
 
+                // Subtract stake from user
+                var user = await _db.Tusers
+                .AsNoTracking()
+                .FirstOrDefaultAsync(u => u.IntUserId == request.IntUserId);
+
+                if (user != null)
+                {
+                    user.IntPoints = user.IntPoints - (int)request.DecPointsPot;
+                    await _db.SaveChangesAsync();
+                }
+
                 return Ok();
             }
             catch
             {
                 return BadRequest();
             }
+        }
+
+        [HttpPost("api/quests/addquesthabits")]
+        public async Task<IActionResult> AddQuestHabit([FromBody] AddQuestHabitRequest request)
+        {
+            if (request == null)
+            {
+                return BadRequest();    
+            }
+
+            if (string.IsNullOrWhiteSpace(request.StrHabitName) || string.IsNullOrWhiteSpace(request.StrDescription))
+            {
+                return BadRequest();
+            }
+
+            // Create new habit
+            var questHabit = new TquestHabit
+            {
+                IntQuestId = request.IntQuestId,
+                StrHabitName = request.StrHabitName,
+                StrDescription = request.StrDescription,
+                IntScheduleId = 1
+            };
+            _db.TquestHabits.Add(questHabit);
+            await _db.SaveChangesAsync();
+
+            // Get and return all quest habits
+            var allQuestHabits = await _db.TquestHabits
+                .AsNoTracking()
+                .Where(qh => qh.IntQuestId == request.IntQuestId)
+                .ToListAsync();
+
+            return Ok(allQuestHabits);
         }
 
         [HttpPost("api/quests/adduserquest")]
