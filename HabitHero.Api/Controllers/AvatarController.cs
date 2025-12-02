@@ -114,7 +114,7 @@ namespace HabitHero.Api.Controllers
             //    Increase happiness if health > 50
             if (avatar.IntHealth > 50)
             {
-                avatar.IntHappiness += 2;  // adjust this amount however you want
+                avatar.IntHappiness += 10;  // adjust this amount however you want
                 avatar.IntHappiness = Math.Min(100, avatar.IntHappiness);
             }
 
@@ -181,6 +181,52 @@ namespace HabitHero.Api.Controllers
                 avatarName = dto.Name
             });
         }
+        [HttpPost("api/avatar/setavatar")]
+        public async Task<IActionResult> SetAvatar([FromBody] CreateAvatarDto dto)
+        {
+            // 1. Validate user
+            var user = await _db.Tusers
+                .FirstOrDefaultAsync(u => u.IntUserId == dto.UserId);
+
+            if (user == null)
+                return NotFound(new { message = "User not found." });
+
+            // 2. Create new avatar
+            var avatar = new Tavatar
+            {
+                StrImageName = $"{dto.AvatarKey.ToLower()}.png",
+                StrAvatarName = dto.AvatarName?.Trim() ?? "",
+                IntHealth = 0,
+                IntHappiness = 0
+            };
+
+            _db.Tavatars.Add(avatar);
+            await _db.SaveChangesAsync();
+
+            // 3. Link avatar to user
+            user.IntAvatarId = avatar.IntAvatarId;
+            await _db.SaveChangesAsync();
+
+            return Ok(new
+            {
+                success = true,
+                avatarId = avatar.IntAvatarId,
+                avatarName = avatar.StrAvatarName,
+                imageName = avatar.StrImageName,
+                health = avatar.IntHealth,
+                happiness = avatar.IntHappiness,
+                items = Array.Empty<object>()
+            });
+        }
+
+        // DTO
+        public class CreateAvatarDto
+        {
+            public int UserId { get; set; }
+            public string AvatarKey { get; set; }
+            public string AvatarName { get; set; }
+        }
+
 
 
 
