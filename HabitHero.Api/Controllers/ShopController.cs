@@ -19,7 +19,7 @@ namespace HabitHero.Api.Controllers
             public int UserId { get; set; } // optionally include in request body
             public List<PurchaseItemDto> Items { get; set; } = new();
         }
-        [HttpPost("purchase")]
+        [HttpPost("api/shop/purchase")]
         public async Task<IActionResult> Purchase([FromBody] PurchaseRequest request)
         {
             // 1️⃣ Verify user
@@ -105,5 +105,26 @@ namespace HabitHero.Api.Controllers
                 items = inventory
             });
         }
+
+            [HttpGet("api/shop/getpoints/{userId}")]
+            public async Task<IActionResult> GetPoints([FromRoute] int userId)
+            {
+                // 1️ Verify user exists
+                var user = await _db.Tusers
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(u => u.IntUserId == userId);
+
+                if (user == null)
+                    return NotFound(new { message = "User not found." });
+
+                // 2️ Return point total
+                return Ok(new
+                {
+                    userId = userId,
+                    points = user.IntPoints
+                });
+            }
+
+        }
     }
-}
+
