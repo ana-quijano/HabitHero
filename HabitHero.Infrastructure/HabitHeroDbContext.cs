@@ -67,6 +67,10 @@ namespace HabitHero.Infrastructure.Data
                       .HasColumnName("intAvatarID");
                 entity.Property(e => e.IntAppRestrictionId)
                       .HasColumnName("intAppRestrictionID");
+                entity.Property(e => e.StrPushToken)
+                      .HasColumnName("strPushToken")
+                      .HasMaxLength(200)
+                      .IsUnicode(false);
 
                 // FK: Users -> AppRestrictions (optional)
                 entity.HasOne(e => e.TappRestriction)

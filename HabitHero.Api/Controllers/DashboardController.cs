@@ -115,6 +115,90 @@ namespace HabitHero.Api.Controllers
                 user.IntAppRestrictionId
             });
         }
+
+        /// <summary>
+        /// Get User's Quest Invites
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        [HttpGet("user/questinvites/{userId}")]
+        public async Task<IActionResult> GetUserQuestInvites([FromRoute] int userId)
+        {
+            var user = await _db.Tusers.FindAsync(userId);
+            if (user == null)
+            {
+                return NotFound(new { message = "User not found." });
+            }
+
+            var userInvites = await _db.TuserQuests
+                .AsNoTracking()
+                .Where(uq => uq.IntUserId == userId && uq.BlnAccepted == false)
+                .ToListAsync();
+
+            if (userInvites.Count > 0 )
+            {
+                return Ok(userInvites);
+
+            }
+            else
+            {
+                return Ok();
+            }
+        }
+
+        /// <summary>
+        /// User Accepts Quest Invite
+        /// </summary>
+        /// <param name="userQuestId"></param>
+        /// <returns></returns>
+        [HttpPost("user/acceptquest/{userQuestId}")]
+        public async Task<IActionResult> AcceptQuestInvite([FromRoute] int userQuestId)
+        {
+            var userQuest = await _db.TuserQuests
+                .FindAsync(userQuestId);
+          
+            if (userQuest != null)
+            {
+                //Mark user quest as accepted
+                if (userQuest.BlnAccepted == false)
+                {
+                    userQuest.BlnAccepted = true;
+
+                    await _db.SaveChangesAsync();
+
+                    return Ok();
+                }
+                else
+                {
+                    return BadRequest();
+                }
+            }
+            else
+            {
+                return NotFound();
+            }
+
+        }
+
+        [HttpPost("api/users/registerpushtoken")]
+        public async Task<IActionResult> RegisterPushToken([FromBody] RegisterPushTokenRequest request)
+        {
+            if (request.IntUserId <= 0 || string.IsNullOrWhiteSpace(request.StrPushToken))
+            {
+                return BadRequest("Invalid user or token.");
+            }
+
+            var user = await _db.Tusers.FirstOrDefaultAsync(u => u.IntUserId == request.IntUserId);
+            if (user == null)
+            {
+                return NotFound("User not found.");
+            }
+
+            user.StrPushToken = request.StrPushToken;
+            await _db.SaveChangesAsync();
+
+            return Ok();
+        }
     }
 }
 

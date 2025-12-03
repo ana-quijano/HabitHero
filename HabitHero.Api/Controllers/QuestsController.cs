@@ -39,6 +39,7 @@ namespace HabitHero.Api.Controllers
             return Ok(new
             {
                 quests = userQuests
+
             });
         }
 
@@ -172,7 +173,8 @@ namespace HabitHero.Api.Controllers
             return Ok(allQuestHabits);
         }
 
-        [HttpPost("api/quests/adduserquest")]
+
+        [HttpPost("api/quests/inviteuserquest")]
         public async Task<IActionResult> InviteUserToQuest([FromBody] InviteUserToQuest request)
         {
             if (string.IsNullOrWhiteSpace(request.StrUserName))
@@ -185,11 +187,11 @@ namespace HabitHero.Api.Controllers
                 return BadRequest("Invalid quest ID.");
             }
 
-            var questExists = await _db.Tquests
+            var quest = await _db.Tquests
                 .AsNoTracking()
-                .AnyAsync(q => q.IntQuestId == request.IntQuestId);
+                .FirstOrDefaultAsync(q => q.IntQuestId == request.IntQuestId);
 
-            if (!questExists)
+            if (quest == null)
             {
                 return NotFound("Quest not found.");
             }
@@ -222,10 +224,56 @@ namespace HabitHero.Api.Controllers
             _db.TuserQuests.Add(userQuest);
             await _db.SaveChangesAsync();
 
+            // AFTER saving to DB, try to send push notification
+            if (!string.IsNullOrWhiteSpace(user.StrPushToken))
+            {
+                try
+                {
+                    await SendQuestInviteNotificationAsync(
+                        user.StrPushToken,
+                        quest.StrQuestName,
+                        request.StrUserName
+                    );
+                }
+                catch (Exception ex)
+                {
+                    // log error; don't fail the invite just because notification failed
+                    Console.WriteLine($"Error sending push notification: {ex.Message}");
+                }
+            }
+
             return Ok(new
             {
                 userQuestId = userQuest.IntUserQuestId
             });
+        }
+
+        private async Task SendQuestInviteNotificationAsync(string expoPushToken, string questName, string username)
+        {
+            using var client = new HttpClient();
+
+            var payload = new[]
+            {
+        new
+        {
+            to = expoPushToken,
+            title = "New Quest Invite ✨",
+            body = $"You’ve been invited to join \"{questName}\".",
+            data = new
+            {
+                questName,
+                type = "questInvite"
+            }
+        }
+    };
+
+            var json = System.Text.Json.JsonSerializer.Serialize(payload);
+            var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+
+            var response = await client.PostAsync("https://exp.host/--/api/v2/push/send", content);
+
+            var responseBody = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"Expo push response: {response.StatusCode} - {responseBody}");
         }
     }
 }
