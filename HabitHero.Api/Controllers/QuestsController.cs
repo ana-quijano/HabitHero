@@ -56,7 +56,8 @@ namespace HabitHero.Api.Controllers
                 {
                     intUserQuestId = uq.IntUserQuestId,
                     intQuestId = uq.IntQuestId,
-                    strQuestName = uq.Tquest.StrQuestName
+                    strQuestName = uq.Tquest.StrQuestName,
+                    decPoints = uq.Tquest.DecPointsPot
                 })
                 .ToListAsync();
 
@@ -303,8 +304,12 @@ namespace HabitHero.Api.Controllers
             {
                 return BadRequest();
             }
+
+            var quest = await _db.Tquests
+                .FirstOrDefaultAsync(q => q.IntQuestId == userQuest.IntQuestId);
             
             userQuest.BlnAccepted = true;
+            user.IntPoints -= (int)quest.DecPointsPot;
             await _db.SaveChangesAsync();
 
             var updatedUserQuests = await _db.TuserQuests
