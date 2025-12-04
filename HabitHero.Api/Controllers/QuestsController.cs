@@ -18,6 +18,18 @@ namespace HabitHero.Api.Controllers
             _gpt = gpt;
         }
 
+        public class DeleteQuestRequest
+        {
+            public int IntQuestId { get; set; }
+            public int IntUserId { get; set; }
+        }
+
+        public class AcceptRejectInviteRequest
+        {
+            public int IntUserQuestId { get; set; }
+            public int IntUserId { get; set; }
+        }
+
         [HttpGet("api/getuserquests/{userId}")]
         public async Task<IActionResult> GetUserQuests([FromRoute] int userId)
         {
@@ -32,14 +44,27 @@ namespace HabitHero.Api.Controllers
 
             var userQuests = await _db.TuserQuests
                 .AsNoTracking()
-                .Where(uq => uq.IntUserId == userId)
+                .Where(uq => uq.IntUserId == userId
+                        && uq.BlnAccepted)
                 .Select(uq => uq.Tquest)
+                .ToListAsync();
+
+            var userInvites = await _db.TuserQuests
+                .AsNoTracking()
+                .Where(uq => uq.IntUserId == userId && !uq.BlnAccepted)
+                .Select(uq => new
+                {
+                    intUserQuestId = uq.IntUserQuestId,
+                    intQuestId = uq.IntQuestId,
+                    strQuestName = uq.Tquest.StrQuestName
+                })
                 .ToListAsync();
 
             return Ok(new
             {
-                quests = userQuests
-
+                quests = userQuests,
+                points = user.IntPoints,
+                invites = userInvites
             });
         }
 
@@ -74,6 +99,7 @@ namespace HabitHero.Api.Controllers
 
             return Ok(new
             {
+                intQuestId = questId,
                 strQuestName = quest.StrQuestName,
                 intPointsPot = (int)quest.DecPointsPot,
                 users = users.Select(u => new {
@@ -173,7 +199,11 @@ namespace HabitHero.Api.Controllers
             return Ok(allQuestHabits);
         }
 
-
+        /// <summary>
+        /// Invite User to Quest
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
         [HttpPost("api/quests/inviteuserquest")]
         public async Task<IActionResult> InviteUserToQuest([FromBody] InviteUserToQuest request)
         {
@@ -248,24 +278,151 @@ namespace HabitHero.Api.Controllers
             });
         }
 
+        /// <summary>
+        /// Post: Accept Quest Invite
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpPost("api/quests/acceptinvite")]
+        public async Task<IActionResult> AcceptQuestInvite([FromBody] AcceptRejectInviteRequest request)
+        {
+            var user = await _db.Tusers
+                .AsNoTracking()
+                .FirstOrDefaultAsync(u => u.IntUserId == request.IntUserId);
+
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            var userQuest = await _db.TuserQuests
+                .FirstOrDefaultAsync(uq => uq.IntUserQuestId == request.IntUserQuestId
+                                    && uq.IntUserId == request.IntUserId);
+
+            if (userQuest == null)
+            {
+                return BadRequest();
+            }
+            
+            userQuest.BlnAccepted = true;
+            await _db.SaveChangesAsync();
+
+            var updatedUserQuests = await _db.TuserQuests
+                .AsNoTracking()
+                .Where(uq => uq.IntUserId == request.IntUserId
+                        && uq.BlnAccepted)
+                .Select(uq => uq.Tquest)
+                .ToListAsync();
+
+            return Ok();
+        }
+
+        [HttpPost("api/quest/rejectquestinvite")]
+        public async Task<IActionResult> RejectQuestInvite([FromBody] AcceptRejectInviteRequest request)
+        {
+            var user = await _db.Tusers
+                .AsNoTracking()
+                .FirstOrDefaultAsync(u => u.IntUserId == request.IntUserId);
+
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            var userQuest = await _db.TuserQuests
+                .FirstOrDefaultAsync(uq => uq.IntUserQuestId == request.IntUserQuestId
+                                    && uq.IntUserId == request.IntUserId);
+
+            if (userQuest == null)
+            {
+                return BadRequest();
+            }
+
+            _db.TuserQuests.Remove(userQuest);
+            await _db.SaveChangesAsync();
+
+            return Ok(new { message = "Quest deleted successfully." });
+        }
+
+        /// <summary>
+        /// Delete quest
+        /// </summary>
+        /// <param name="expoPushToken"></param>
+        /// <returns></returns>
+        [HttpPost("api/quests/deletequest")]
+        public async Task<IActionResult> DeleteQuest([FromBody] DeleteQuestRequest request)
+        {
+            using var transaction = await _db.Database.BeginTransactionAsync();
+
+            try
+            {
+                // Delete quest habits by questID
+                var questHabits = _db.TquestHabits
+                    .Where(qh => qh.IntQuestId == request.IntQuestId);
+
+                if (questHabits.Any())
+                {
+                    _db.TquestHabits.RemoveRange(questHabits);
+                }
+
+                // Delete user quests  by questID
+                var userQuests = _db.TuserQuests
+                    .Where(uq => uq.IntQuestId == request.IntQuestId);
+
+                if (userQuests.Any())
+                { 
+                    _db.TuserQuests.RemoveRange(userQuests);
+                }
+
+                // Delete quest
+                var quest = await _db.Tquests
+                    .FirstOrDefaultAsync(q => q.IntQuestId == request.IntQuestId);
+                if (quest != null)
+                {
+                    _db.Tquests.Remove(quest);
+                }
+
+                await _db.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return Ok(new { message = "Quest deleted successfully." });
+            }
+            catch (Exception)
+            {
+                await transaction.RollbackAsync();
+                return StatusCode(500, "An error occurred while deleting the quest.");
+            }
+
+            
+        }
+
+        
+
+        /// <summary>
+        /// Notification
+        /// </summary>
+        /// <param name="expoPushToken"></param>
+        /// <param name="questName"></param>
+        /// <param name="username"></param>
+        /// <returns></returns>
         private async Task SendQuestInviteNotificationAsync(string expoPushToken, string questName, string username)
         {
             using var client = new HttpClient();
 
             var payload = new[]
             {
-        new
-        {
-            to = expoPushToken,
-            title = "New Quest Invite ✨",
-            body = $"You’ve been invited to join \"{questName}\".",
-            data = new
-            {
-                questName,
-                type = "questInvite"
-            }
-        }
-    };
+                new
+                {
+                    to = expoPushToken,
+                    title = "New Quest Invite ✨",
+                    body = $"You’ve been invited to join \"{questName}\".",
+                    data = new
+                    {
+                        questName,
+                        type = "questInvite"
+                    }
+                }
+            };
 
             var json = System.Text.Json.JsonSerializer.Serialize(payload);
             var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
