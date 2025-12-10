@@ -69,6 +69,37 @@ namespace HabitHero.Api.Controllers
             });
         }
 
+        [HttpGet("api/getuserinvites/{userId}")]
+        public async Task<IActionResult> GetUserInvites([FromRoute] int userId)
+        {
+            var user = await _db.Tusers
+                .AsNoTracking()
+                .FirstOrDefaultAsync(u => u.IntUserId == userId);
+
+            if (user == null)
+            {
+                return NotFound("User not found.");
+            }
+
+            var userInvites = await _db.TuserQuests
+                .AsNoTracking()
+                .Where(uq => uq.IntUserId == userId && !uq.BlnAccepted)
+                .Select(uq => new
+                {
+                    intUserQuestId = uq.IntUserQuestId,
+                    intQuestId = uq.IntQuestId,
+                    strQuestName = uq.Tquest.StrQuestName,
+                    decPoints = uq.Tquest.DecPointsPot
+                })
+                .ToListAsync();
+
+            return Ok(new
+            {
+                invites = userInvites
+            });
+        }
+
+
         [HttpGet("api/getquestdetails/{questId}")]
         public async Task<IActionResult> GetQuestDetails([FromRoute] int questId)
         {
