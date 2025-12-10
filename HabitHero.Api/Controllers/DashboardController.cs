@@ -41,11 +41,23 @@ namespace HabitHero.Api.Controllers
                 return Conflict(new { message = "Passwords do not match. Please try again." });
             };
 
+            var avatar = new Tavatar
+            {
+                StrImageName = "blob.png",
+                StrAvatarName = "My Pet Blob",
+                IntHappiness = 70,
+                IntHealth = 70
+            };
+
+            _db.Tavatars.Add(avatar);
+            await _db.SaveChangesAsync();
+
             var user = new Tuser
             {
                 StrUsername = username,
                 StrEmail = email,
-                StrPassword = password
+                StrPassword = password,
+                IntAvatarId = avatar.IntAvatarId
             };
 
             _db.Tusers.Add(user);
