@@ -174,15 +174,16 @@ namespace HabitHero.Api.Controllers
                 var newUserQuest = new TuserQuest
                 {
                     IntUserId = request.IntUserId,
-                    IntQuestId = newQuest.IntQuestId
+                    IntQuestId = newQuest.IntQuestId,
+                    BlnAccepted = true
                 };
                 _db.TuserQuests.Add(newUserQuest);
                 await _db.SaveChangesAsync();
 
                 // Subtract stake from user
                 var user = await _db.Tusers
-                .AsNoTracking()
-                .FirstOrDefaultAsync(u => u.IntUserId == request.IntUserId);
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(u => u.IntUserId == request.IntUserId);
 
                 if (user != null)
                 {
