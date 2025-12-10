@@ -83,7 +83,8 @@ namespace HabitHero.Api.Controllers
             {
                 intUserId = user.IntUserId,
                 strUsername = user.StrUsername,
-                strEmail = user.StrEmail
+                strEmail = user.StrEmail,
+                intPoints = user.IntPoints
             });
         }
 

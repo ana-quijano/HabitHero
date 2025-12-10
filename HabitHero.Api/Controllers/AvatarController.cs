@@ -54,7 +54,7 @@ namespace HabitHero.Api.Controllers
                         quantity = ai.IntQuantity
                     })
                 .ToListAsync();
-
+          
             // 4. Return combined avatar + inventory data
             return Ok(new
             {
