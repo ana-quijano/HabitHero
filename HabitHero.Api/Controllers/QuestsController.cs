@@ -182,7 +182,6 @@ namespace HabitHero.Api.Controllers
 
                 // Subtract stake from user
                 var user = await _db.Tusers
-                    .AsNoTracking()
                     .FirstOrDefaultAsync(u => u.IntUserId == request.IntUserId);
 
                 if (user == null)
@@ -332,7 +331,6 @@ namespace HabitHero.Api.Controllers
         public async Task<IActionResult> AcceptQuestInvite([FromBody] AcceptRejectInviteRequest request)
         {
             var user = await _db.Tusers
-                .AsNoTracking()
                 .FirstOrDefaultAsync(u => u.IntUserId == request.IntUserId);
 
             if (user == null)
