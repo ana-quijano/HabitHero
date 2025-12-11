@@ -18,7 +18,7 @@ namespace HabitHero.Api.Controllers
 		// GET: top 10 users with the most DecPoints,
 		// returned ASCENDING by points (if fewer than 10 users, return all).
 		// ---------------------------------------------------------------------
-		[HttpGet("api/getTopUsers")]
+		[HttpGet("getTopUsers")]
 		public async Task<IActionResult> GetTopUsers() 
 		{
 			if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -31,7 +31,7 @@ namespace HabitHero.Api.Controllers
 					username = u.StrUsername,
 					totalPoints = u.IntPoints
 				})
-				.Take(10)
+				.Take(5)
 				.ToListAsync();
 
 			return Ok(topDescending);
