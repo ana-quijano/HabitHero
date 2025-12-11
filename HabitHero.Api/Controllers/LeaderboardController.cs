@@ -31,7 +31,7 @@ namespace HabitHero.Api.Controllers
 					username = u.StrUsername,
 					totalPoints = u.IntPoints
 				})
-				.Take(5)
+				.Take(10)
 				.ToListAsync();
 
 			return Ok(topDescending);
