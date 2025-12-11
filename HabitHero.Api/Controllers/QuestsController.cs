@@ -185,13 +185,21 @@ namespace HabitHero.Api.Controllers
                     .AsNoTracking()
                     .FirstOrDefaultAsync(u => u.IntUserId == request.IntUserId);
 
-                if (user != null)
+                if (user == null)
+                {
+                    return BadRequest();
+                }
+
+                if (request.DecPointsPot >= user.IntPoints)
                 {
                     user.IntPoints = user.IntPoints - (int)request.DecPointsPot;
                     await _db.SaveChangesAsync();
                 }
 
-                return Ok();
+                return Ok(new
+                {
+                    points = user.IntPoints
+                });
             }
             catch
             {
@@ -351,7 +359,10 @@ namespace HabitHero.Api.Controllers
                 .Select(uq => uq.Tquest)
                 .ToListAsync();
 
-            return Ok();
+            return Ok(new
+            {
+                points = user.IntPoints,
+            });
         }
 
         [HttpPost("api/quest/rejectquestinvite")]
