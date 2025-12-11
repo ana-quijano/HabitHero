@@ -27,8 +27,7 @@ namespace HabitHero.Api.Controllers
         [HttpGet("signup/{username}/{email}/{password}/{confirmpassword}")]
         public async Task<IActionResult> Signup([FromRoute] string username, [FromRoute] string email,[FromRoute] string password, [FromRoute] string confirmpassword)
         {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
-
+            
             var emailExists = await _db.Tusers.AnyAsync(u => u.StrEmail == email);
 
             if (emailExists)
@@ -65,7 +64,15 @@ namespace HabitHero.Api.Controllers
 
             var userId = user.IntUserId;
 
-            return Ok(user);
+            return Ok(new
+            {
+                intUserId = user.IntUserId,
+                strUsername = user.StrUsername,
+                strPassword = user.StrPassword,
+                strEmail = user.StrEmail,
+                intAvatarId = user.IntAvatarId
+                
+            });
         }
 
         /// <summary>
