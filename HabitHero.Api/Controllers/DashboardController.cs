@@ -65,7 +65,7 @@ namespace HabitHero.Api.Controllers
 
             var userId = user.IntUserId;
 
-            return Ok(userId);
+            return Ok(user);
         }
 
         /// <summary>

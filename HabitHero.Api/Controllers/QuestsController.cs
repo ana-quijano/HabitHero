@@ -123,17 +123,19 @@ namespace HabitHero.Api.Controllers
             var users = await _db.Tusers
                 .Where(u => userIds.Contains(u.IntUserId))
                 .ToListAsync();
+            var userCount = users.Count;
 
             // Get quest habits
             var questHabits = await _db.TquestHabits
                 .Where(qh => qh.IntQuestId == questId)
                 .ToListAsync();
 
+            
             return Ok(new
             {
                 intQuestId = questId,
                 strQuestName = quest.StrQuestName,
-                intPointsPot = (int)quest.DecPointsPot,
+                intPointsPot = (int)quest.DecPointsPot * userCount,
                 users = users.Select(u => new {
                     intUserId = u.IntUserId,
                     strUsername = u.StrUsername
