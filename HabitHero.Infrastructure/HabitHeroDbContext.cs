@@ -131,11 +131,11 @@ namespace HabitHero.Infrastructure.Data
                 entity.Property(e => e.IntHappiness)
                       .HasColumnName("intHappiness")
                       .HasColumnType("Integer")
-                      .HasDefaultValue(100);
+                      .HasDefaultValue(70);
                 entity.Property(e => e.IntHealth)
                       .HasColumnName("intHealth")
                       .HasColumnType("Integer")
-                      .HasDefaultValue(100);
+                      .HasDefaultValue(70);
 
                 entity.HasMany(a => a.Tusers)
                      .WithOne(u => u.Tavatar)

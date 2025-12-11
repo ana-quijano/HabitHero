@@ -196,8 +196,8 @@ namespace HabitHero.Api.Controllers
             {
                 StrImageName = $"{dto.AvatarKey.ToLower()}.png",
                 StrAvatarName = dto.AvatarName?.Trim() ?? "",
-                IntHealth = 0,
-                IntHappiness = 0
+                IntHealth = 70,
+                IntHappiness = 70
             };
 
             _db.Tavatars.Add(avatar);
