@@ -190,10 +190,14 @@ namespace HabitHero.Api.Controllers
                     return BadRequest();
                 }
 
-                if (request.DecPointsPot >= user.IntPoints)
+                if (request.DecPointsPot <= user.IntPoints)
                 {
                     user.IntPoints = user.IntPoints - (int)request.DecPointsPot;
                     await _db.SaveChangesAsync();
+                }
+                else
+                {
+                    return BadRequest();
                 }
 
                 return Ok(new
@@ -361,6 +365,7 @@ namespace HabitHero.Api.Controllers
 
             return Ok(new
             {
+                quests = updatedUserQuests,
                 points = user.IntPoints,
             });
         }
