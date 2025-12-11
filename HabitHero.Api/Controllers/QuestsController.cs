@@ -196,7 +196,7 @@ namespace HabitHero.Api.Controllers
                 }
                 else
                 {
-                    return BadRequest();
+                    return BadRequest("Sorry, you don't have enough points to join this quest.");
                 }
 
                 return Ok(new
@@ -351,7 +351,14 @@ namespace HabitHero.Api.Controllers
                 .FirstOrDefaultAsync(q => q.IntQuestId == userQuest.IntQuestId);
             
             userQuest.BlnAccepted = true;
-            user.IntPoints -= (int)quest.DecPointsPot;
+            if (quest.DecPointsPot <= user.IntPoints)
+            {
+                user.IntPoints -= (int)quest.DecPointsPot;
+            }
+            else
+            {
+                return BadRequest("Sorry, you don't have enough points to join this quest.");
+            }
             await _db.SaveChangesAsync();
 
             var updatedUserQuests = await _db.TuserQuests
